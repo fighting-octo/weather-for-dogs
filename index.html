@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f1724">
+<title>Weather for Dogs 🐾</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#151019; --panel:#231e2c; --panel2:#2d2739; --line:#3d3652;
+    --text:#f3eef8; --muted:#aca1ba; --accent:#6ba6ff; --accent2:#7ff0c6;
+    --warm:#ffb27a;
+    --warn:#ffb020; --danger:#ff6b74; --good:#54df88; --cold:#8fd3ff;
+    --radius:16px; --shadow:0 10px 34px rgba(0,0,0,.42);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(1100px 520px at 82% -12%, rgba(255,170,112,.17), transparent 60%),
+      radial-gradient(880px 460px at 10% 2%, rgba(255,120,150,.09), transparent 55%),
+      linear-gradient(180deg,#1e1826 0%, var(--bg) 60%);
+    background-attachment:fixed;
+    color:var(--text); min-height:100vh;
+    padding:18px 14px calc(46px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+
+  /* header + mascot */
+  header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+    margin:0 -14px 18px;padding:10px 14px;
+    background:linear-gradient(180deg,rgba(21,16,25,.97) 0%,rgba(21,16,25,.84) 100%);
+    backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15);
+    border-bottom:1px solid var(--line)}
+  .corgi{width:clamp(66px,16vw,92px);height:auto;flex:0 0 auto;display:block;
+    filter:drop-shadow(0 5px 12px rgba(0,0,0,.3));
+    animation:bob 3.6s ease-in-out infinite;transform-origin:50% 90%}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
+  .htext{flex:1;min-width:0}
+  h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
+  .dogname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
+    color:#7be6a0;font-size:clamp(28px,8vw,42px);line-height:.9;font-weight:400;
+    text-shadow:0 2px 10px rgba(74,222,128,.35);white-space:nowrap}
+  .dogname:empty{display:none}
+  /* SVG weather icons scale with parent font-size */
+  .wxi{width:1em;height:1em;display:inline-block;vertical-align:middle}
+  .sub{color:var(--muted);font-size:clamp(11px,3vw,13px);margin-top:2px}
+  .units{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:0 0 auto}
+  .units button{background:transparent;color:var(--muted);border:none;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
+  .units button.on{background:var(--accent);color:#04122b}
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,#1a1522 100%);border:1px solid var(--line);
+    border-radius:var(--radius);padding:clamp(14px,4vw,20px);box-shadow:var(--shadow);margin-bottom:16px}
+  .card h2{margin:0 0 4px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;
+    text-transform:uppercase;letter-spacing:.6px}
+  .card .hint{color:var(--muted);font-size:12px;margin-bottom:14px}
+
+  /* search */
+  .searchbar{display:flex;flex-wrap:wrap;gap:8px}
+  input[type=text],select{background:var(--panel2);border:1px solid var(--line);color:var(--text);
+    padding:11px 13px;border-radius:11px;font-size:16px;outline:none;transition:border .15s;-webkit-appearance:none}
+  input[type=text]:focus,select:focus{border-color:var(--accent)}
+  input#loc{flex:1;min-width:0}
+  button.act{background:var(--accent);color:#04122b;border:none;padding:11px 16px;border-radius:11px;
+    font-size:14px;font-weight:700;cursor:pointer}
+  button.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:11px 14px;border-radius:11px;font-weight:600;cursor:pointer}
+  select.picker{width:100%;margin-top:10px;display:none}
+  select.picker.show{display:block}
+  .loading{color:var(--muted);font-size:13px;padding:8px 0}
+  .err{color:var(--danger);font-size:13px;padding:8px 0}
+
+  /* current */
+  .cur{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
+  .cur .ico{font-size:clamp(46px,13vw,58px)}
+  .cur .temp{font-size:clamp(40px,12vw,56px);font-weight:800;line-height:1}
+  .cur .place{font-size:clamp(15px,4vw,18px);font-weight:700}
+  .cur .meta{color:var(--muted);font-size:13.5px;line-height:1.6}
+  .pills{display:flex;flex-wrap:wrap;gap:8px;width:100%}
+  .pill{flex:1 1 70px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 6px;font-size:12px;text-align:center}
+  .pill b{display:block;font-size:15px;margin-top:2px} .pill span{color:var(--muted)}
+
+  /* hourly (matches reference) */
+  .hscroll{display:flex;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .hscroll::-webkit-scrollbar{height:6px}.hscroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+  .hour{flex:0 0 auto;width:82px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:14px;padding:12px 6px;text-align:center;scroll-snap-align:start}
+  .hour.now{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .hour .t{font-size:12px;color:var(--muted);font-weight:600}
+  .hour .i{font-size:26px;margin:7px 0 4px}
+  .hour .d{font-size:18px;font-weight:700}
+  .hour .r{font-size:11px;color:var(--cold);margin-top:4px}
+  .hour .w{font-size:11px;color:var(--muted);margin-top:5px;white-space:nowrap}
+  .hour .w .ar{color:var(--accent2);font-weight:700}
+
+  /* 5-day (matches reference) */
+  .days{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .day{background:var(--panel2);border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center}
+  .day.today{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .day .dn{font-weight:700;font-size:14px}
+  .day .i{font-size:clamp(44px,11vw,56px);margin:8px 0 6px}
+  .day .hi{font-size:20px;font-weight:800}
+  .day .lo{font-size:14px;color:var(--muted);margin-top:1px}
+  .day .rn{font-size:11.5px;color:var(--cold);margin-top:8px}
+  .day .wn{font-size:11.5px;color:var(--muted);margin-top:4px;white-space:nowrap}
+  .day .wn .ar{color:var(--accent2);font-weight:700}
+  @media(max-width:640px){
+    .days{grid-auto-flow:column;grid-template-columns:none;grid-auto-columns:minmax(120px,1fr);
+      overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:6px}
+    .day{scroll-snap-align:start}
+  }
+
+  /* dog card */
+  .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px}
+  .doginputs label{font-size:11px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .doginputs input,.doginputs select{width:100%}
+  .greet{font-size:14px;font-weight:700;margin:-4px 0 14px;color:var(--text)}
+  .greet span{color:var(--accent2)}
+
+  .warnbanner{display:none;align-items:center;gap:12px;
+    background:linear-gradient(90deg,rgba(255,92,108,.28),rgba(255,176,32,.16));
+    border:1px solid var(--danger);border-radius:13px;padding:13px 15px;margin-bottom:14px;font-weight:700;font-size:14px}
+  .warnbanner.show{display:flex}
+  .warnbanner .wi{font-size:26px;animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
+
+  .gauge{border-radius:14px;padding:16px;border:1px solid var(--line);position:relative}
+  .gauge.lvl-good{background:linear-gradient(180deg,rgba(74,222,128,.15),transparent);border-color:rgba(74,222,128,.45)}
+  .gauge.lvl-ok{background:linear-gradient(180deg,rgba(250,204,21,.13),transparent);border-color:rgba(250,204,21,.4)}
+  .gauge.lvl-caution{background:linear-gradient(180deg,rgba(255,176,32,.15),transparent);border-color:rgba(255,176,32,.5)}
+  .gauge.lvl-risky{background:linear-gradient(180deg,rgba(255,120,60,.16),transparent);border-color:rgba(255,120,60,.55)}
+  .gauge.lvl-danger{background:linear-gradient(180deg,rgba(255,92,108,.18),transparent);border-color:rgba(255,92,108,.6)}
+  .gscore{display:flex;align-items:center;gap:12px}
+  .gscore .em{font-size:34px;line-height:1}
+  .gscore .tt{font-size:17px;font-weight:800;line-height:1.2}
+  .gscore .tt small{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px}
+  .gscore .num{margin-left:auto;font-size:28px;font-weight:800;text-align:right}
+  .gscore .num small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+
+  /* clear condition-stage scale */
+  .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:16px 0 6px}
+  .stage{text-align:center;padding:7px 3px;border-radius:9px;font-size:10.5px;font-weight:700;
+    background:var(--panel2);border:1px solid var(--line);color:var(--muted);opacity:.55;line-height:1.25}
+  .stage .se{font-size:15px;display:block;margin-bottom:2px}
+  .stage.active{opacity:1;transform:translateY(-2px)}
+  .stage.s1.active{background:rgba(74,222,128,.2);border-color:var(--good);color:#bff5d0}
+  .stage.s2.active{background:rgba(250,204,21,.2);border-color:#facc15;color:#fde68a}
+  .stage.s3.active{background:rgba(255,176,32,.2);border-color:var(--warn);color:#ffe0a3}
+  .stage.s4.active{background:rgba(255,120,60,.2);border-color:#ff783c;color:#ffc7a8}
+  .stage.s5.active{background:rgba(255,92,108,.22);border-color:var(--danger);color:#ffc0c7}
+
+  .verdict{font-size:14px;margin-top:12px;line-height:1.5}
+  .factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-top:16px}
+  .factor{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 12px}
+  .factor .fl{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;gap:6px}
+  .factor .fl b{color:var(--text)}
+  .factor .fv{font-size:13.5px;font-weight:600}
+  .factor .fbar{height:6px;background:#17121f;border-radius:6px;margin-top:8px;overflow:hidden}
+  .factor .fbar i{display:block;height:100%;border-radius:6px}
+  .recs{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  .rec{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);
+    border-radius:11px;padding:11px 12px;font-size:13.5px;line-height:1.45}
+  .rec.breed{border-color:rgba(124,240,196,.4);background:linear-gradient(90deg,rgba(124,240,196,.1),var(--panel2))}
+  .rec .em{font-size:19px;line-height:1.3;flex:0 0 auto}
+  /* hero dog card */
+  .card.hero{border-color:rgba(124,240,196,.5);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 1px rgba(124,240,196,.15)}
+  .card.hero>h2{font-size:17px;color:var(--accent2)}
+  /* best-time headline banner */
+  .besttime{display:flex;gap:14px;align-items:center;border-radius:14px;padding:15px 17px;margin-bottom:14px;
+    background:linear-gradient(100deg,rgba(124,240,196,.16),rgba(94,157,255,.08));border:1px solid rgba(124,240,196,.4)}
+  .besttime.lvl-ok{background:linear-gradient(100deg,rgba(250,204,21,.15),transparent);border-color:rgba(250,204,21,.4)}
+  .besttime.lvl-caution{background:linear-gradient(100deg,rgba(255,176,32,.16),transparent);border-color:rgba(255,176,32,.45)}
+  .besttime.lvl-risky,.besttime.lvl-danger{background:linear-gradient(100deg,rgba(255,92,108,.16),transparent);border-color:rgba(255,92,108,.5)}
+  .besttime .bt-emoji{font-size:30px;line-height:1;flex:0 0 auto}
+  .besttime .bt-main{font-size:clamp(15px,4.4vw,19px);font-weight:800;line-height:1.25}
+  .besttime .bt-main b{color:var(--accent2)}
+  .besttime.lvl-caution .bt-main b,.besttime.lvl-risky .bt-main b,.besttime.lvl-danger .bt-main b{color:#ffd7a3}
+  .besttime .bt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .besttime .bt-sub b{color:var(--text)}
+  /* walkability timeline */
+  .tlwrap{margin-bottom:6px}
+  .tlhead{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+    display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:9px}
+  .tllegend{display:flex;flex-wrap:wrap;gap:4px 10px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
+  .tllegend span{display:inline-flex;align-items:center;gap:4px;font-size:11px}
+  .timeline{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
+  .timeline::-webkit-scrollbar{height:6px}.timeline::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
+  .tl-cell{flex:0 0 auto;width:52px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;
+    padding:8px 4px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .tl-cell.best{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;background:rgba(124,240,196,.08)}
+  .tl-time{font-size:10.5px;color:var(--muted);font-weight:600;white-space:nowrap}
+  .tl-bar{width:9px;height:44px;background:#17121f;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
+  .tl-bar i{display:block;width:100%;border-radius:6px}
+  .tl-em{font-size:13px;line-height:1}
+  .tl-temp{font-size:12px;font-weight:700}
+  .nowlbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;
+    display:flex;align-items:center;gap:8px}
+  .nowlbl::after{content:"";flex:1;height:1px;background:var(--line)}
+  .note{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+
+  /* pollen */
+  .allergysum{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px 15px;margin-bottom:14px;font-size:14px;display:flex;align-items:center;gap:12px;line-height:1.5}
+  .pollen{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+  .pcell{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .pcell .pn{font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+  .pcell .pl{font-size:12.5px;margin-top:6px;font-weight:700}
+  .pcell .pbar{height:7px;background:#17121f;border-radius:6px;margin-top:8px;overflow:hidden}
+  .pcell .pbar i{display:block;height:100%}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
+  a{color:var(--accent)}
+  .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <svg class="corgi" viewBox="0 0 200 210" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly dog sketch">
+      <g fill="#eef2fa" stroke="#c5d0e6" stroke-width="3">
+        <!-- tail -->
+        <path d="M126,150 C146,148 154,128 143,118 C137,113 129,119 132,129 C134,138 127,140 126,150 Z"/>
+        <!-- floppy ears -->
+        <path d="M72,58 C52,62 44,96 55,124 C61,138 78,135 82,118 C86,97 88,66 84,56 C82,50 76,52 72,58 Z"/>
+        <path d="M128,58 C148,62 156,96 145,124 C139,138 122,135 118,118 C114,97 112,66 116,56 C118,50 124,52 128,58 Z"/>
+        <!-- sitting body -->
+        <path d="M74,104 C60,130 56,160 72,178 C84,189 116,189 128,178 C144,160 140,130 126,104 C116,117 84,117 74,104 Z"/>
+        <!-- front legs + paws -->
+        <rect x="80" y="150" width="17" height="36" rx="8.5"/>
+        <rect x="103" y="150" width="17" height="36" rx="8.5"/>
+        <ellipse cx="88.5" cy="185" rx="11" ry="6.5"/>
+        <ellipse cx="111.5" cy="185" rx="11" ry="6.5"/>
+        <!-- head -->
+        <circle cx="100" cy="78" r="36"/>
+      </g>
+      <!-- muzzle -->
+      <ellipse cx="100" cy="96" rx="21" ry="16" fill="#f7faff" stroke="#c5d0e6" stroke-width="2.6"/>
+      <!-- toe lines -->
+      <g stroke="#c5d0e6" stroke-width="2"><line x1="88.5" y1="181" x2="88.5" y2="188"/><line x1="111.5" y1="181" x2="111.5" y2="188"/></g>
+      <!-- eyes -->
+      <circle cx="86" cy="74" r="4.6" fill="#33405c"/><circle cx="114" cy="74" r="4.6" fill="#33405c"/>
+      <circle cx="87.6" cy="72.4" r="1.6" fill="#fff"/><circle cx="115.6" cy="72.4" r="1.6" fill="#fff"/>
+      <!-- nose + mouth -->
+      <ellipse cx="100" cy="89" rx="8.5" ry="6.4" fill="#33405c"/>
+      <path d="M100,95 L100,101" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M100,101 C100,109 91,112 86,107" fill="none" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M100,101 C100,109 109,112 114,107" fill="none" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
+      <!-- tongue -->
+      <path d="M93,109 Q100,122 107,109 Q103.5,116 100,116 Q96.5,116 93,109 Z" fill="#f2879a"/>
+    </svg>
+    <div class="htext">
+      <h1>Weather for Dogs <span class="dogname" id="dogTitleName"></span></h1>
+      <div class="sub">Local forecast + a smart dog‑walking safety index</div>
+    </div>
+    <div class="units" id="units">
+      <button data-u="imperial" class="on">°F</button>
+      <button data-u="metric">°C</button>
+    </div>
+  </header>
+
+  <!-- LOCATION -->
+  <div class="card">
+    <h2>📍 Location</h2>
+    <div class="hint">Type a city. If several match, pick the right one from the menu.</div>
+    <div class="searchbar">
+      <input type="text" id="loc" placeholder="e.g. Palo Alto" autocomplete="off">
+      <button class="act" id="searchBtn">Search</button>
+      <button class="ghost" id="geoBtn" title="Use my location">📌</button>
+    </div>
+    <select class="picker" id="picker"></select>
+    <div id="locStatus" class="loading" style="display:none"></div>
+  </div>
+
+  <div id="currentArea"></div>
+
+  <!-- DOG WALK GUIDE (directly under city + temperature) -->
+  <div class="card hero" id="dogCard">
+    <h2>🐾 Doggie Walk &amp; Play Index</h2>
+    <div class="hint">When is the best time to walk or play outside today — and for how long? We weigh temperature, wind, air quality and fatigue for your dog's breed, hour by hour.</div>
+    <div class="doginputs">
+      <div class="fld">
+        <label for="dogName">🐶 Your dog's name</label>
+        <input type="text" id="dogName" placeholder="e.g. Biscuit">
+      </div>
+      <div class="fld">
+        <label for="breed">🦴 Breed</label>
+        <select id="breed"></select>
+      </div>
+    </div>
+    <div class="greet" id="greet" style="display:none"></div>
+    <div class="warnbanner" id="warnBanner"><span class="wi">⚠️</span><span id="warnText"></span></div>
+
+    <!-- HERO: best time to walk + rest-of-day outlook -->
+    <div class="besttime" id="bestTime"></div>
+    <div class="tlwrap">
+      <div class="tlhead"><span id="tlTitle">Rest‑of‑day walkability</span><span class="tllegend" id="tlLegend"></span></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+
+    <div class="nowlbl">Right now</div>
+    <div class="gauge" id="dogGauge">
+      <div class="gscore">
+        <span class="em" id="dogEmoji">🐶</span>
+        <span class="tt" id="dogTitle">—<small id="dogTitleSub">Enter a location to begin</small></span>
+        <span class="num" id="dogNum">—<small>/ 100</small></span>
+      </div>
+      <div class="stages" id="stages">
+        <div class="stage s1"><span class="se">🟢</span>Safe</div>
+        <div class="stage s2"><span class="se">🟡</span>Good</div>
+        <div class="stage s3"><span class="se">🟠</span>Caution</div>
+        <div class="stage s4"><span class="se">🔴</span>Risky</div>
+        <div class="stage s5"><span class="se">🛑</span>Danger</div>
+      </div>
+      <div class="verdict" id="dogVerdict"></div>
+      <div class="factors" id="dogFactors"></div>
+      <div class="recs" id="dogRecs"></div>
+    </div>
+    <div class="note">Guidance only — always use your own judgment. Flat‑faced (brachycephalic) and senior dogs need extra caution in heat.</div>
+  </div>
+
+  <div id="hourlyArea"></div>
+
+  <!-- 5-DAY -->
+  <div id="dailyArea"></div>
+
+  <!-- POLLEN -->
+  <div class="card" id="pollenCard">
+    <h2>🌾 Pollen &amp; Allergy Index</h2>
+    <div class="hint">General airborne allergen levels for the selected area.</div>
+    <div class="allergysum" id="allergySum">Loading…</div>
+    <div class="pollen" id="pollenGrid"></div>
+    <div class="note" id="pollenNote"></div>
+  </div>
+
+  <div class="foot">Data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> · Not veterinary or medical advice.</div>
+</div>
+
+<script>
+/* ============================ BREED DATA ============================ */
+/* heat 1(low)–5(high) heat tolerance | cold 1–5 cold tolerance
+   size 1 tiny..5 giant | coat 0 hairless..3 heavy double | brachy flat-faced */
+const BREEDS = {
+  "Generic / Mixed":         {heat:3,cold:3,size:3,coat:2,brachy:false},
+  "Labrador Retriever":      {heat:3,cold:4,size:4,coat:2,brachy:false},
+  "Golden Retriever":        {heat:3,cold:4,size:4,coat:3,brachy:false},
+  "German Shepherd":         {heat:3,cold:4,size:4,coat:3,brachy:false},
+  "French Bulldog":          {heat:1,cold:2,size:2,coat:1,brachy:true},
+  "Bulldog (English)":       {heat:1,cold:2,size:3,coat:1,brachy:true},
+  "Pug":                     {heat:1,cold:2,size:2,coat:1,brachy:true},
+  "Boxer":                   {heat:2,cold:2,size:4,coat:1,brachy:true},
+  "Boston Terrier":          {heat:1,cold:2,size:2,coat:1,brachy:true},
+  "Cavalier K.C. Spaniel":   {heat:2,cold:3,size:2,coat:2,brachy:true},
+  "Poodle (Standard)":       {heat:3,cold:3,size:4,coat:2,brachy:false},
+  "Poodle (Toy)":            {heat:3,cold:2,size:1,coat:2,brachy:false},
+  "Chihuahua":               {heat:3,cold:1,size:1,coat:1,brachy:false},
+  "Yorkshire Terrier":       {heat:3,cold:2,size:1,coat:1,brachy:false},
+  "Dachshund":               {heat:3,cold:2,size:2,coat:1,brachy:false},
+  "Beagle":                  {heat:3,cold:3,size:3,coat:2,brachy:false},
+  "Border Collie":           {heat:3,cold:4,size:3,coat:3,brachy:false},
+  "Australian Shepherd":     {heat:3,cold:4,size:3,coat:3,brachy:false},
+  "Siberian Husky":          {heat:2,cold:5,size:4,coat:3,brachy:false},
+  "Alaskan Malamute":        {heat:1,cold:5,size:5,coat:3,brachy:false},
+  "Bernese Mountain Dog":    {heat:2,cold:5,size:5,coat:3,brachy:false},
+  "Great Dane":              {heat:2,cold:2,size:5,coat:1,brachy:false},
+  "Greyhound":               {heat:3,cold:1,size:4,coat:0,brachy:false},
+  "Whippet":                 {heat:3,cold:1,size:3,coat:0,brachy:false},
+  "Shih Tzu":                {heat:2,cold:3,size:2,coat:2,brachy:true},
+  "Pomeranian":              {heat:2,cold:3,size:1,coat:3,brachy:false},
+  "Rottweiler":              {heat:3,cold:4,size:5,coat:2,brachy:false},
+  "Doberman Pinscher":       {heat:3,cold:1,size:4,coat:0,brachy:false},
+  "Corgi (Pembroke)":        {heat:3,cold:3,size:2,coat:2,brachy:false},
+  "Shiba Inu":               {heat:3,cold:4,size:2,coat:3,brachy:false},
+  "Saint Bernard":           {heat:1,cold:5,size:5,coat:3,brachy:false},
+  "Maltese":                 {heat:3,cold:2,size:1,coat:1,brachy:false},
+  "Jack Russell Terrier":    {heat:3,cold:3,size:2,coat:1,brachy:false},
+};
+/* short breed-specific note shown as its own recommendation */
+function breedNote(name, b){
+  if(b.brachy) return `As a flat‑faced breed, ${name} can't cool by panting as well — keep exercise short and avoid midday heat.`;
+  if(b.coat>=3 && b.heat<=2) return `${name}'s heavy double coat traps heat — favor cool hours and shade.`;
+  if(b.cold>=5) return `${name} is built for cold and loves brisk, chilly walks — just watch the paws on ice/salt.`;
+  if(b.coat<=0) return `${name} has almost no coat — a jacket is important once it gets cool or windy.`;
+  if(b.size<=1) return `Being tiny, ${name} loses body heat fast — add a layer earlier than bigger dogs.`;
+  if(b.heat>=3 && b.cold>=4) return `${name} handles a wide range of weather well — still bring water when it's warm.`;
+  return `Watch ${name}'s energy and paws, and adjust the walk length to the conditions.`;
+}
+
+/* ============================ WEATHER CODES ============================ */
+const WMO={0:["Clear","☀️"],1:["Mostly clear","🌤️"],2:["Partly cloudy","⛅"],3:["Overcast","☁️"],
+  45:["Fog","🌫️"],48:["Rime fog","🌫️"],51:["Light drizzle","🌦️"],53:["Drizzle","🌦️"],55:["Heavy drizzle","🌧️"],
+  56:["Freezing drizzle","🌨️"],57:["Freezing drizzle","🌨️"],61:["Light rain","🌦️"],63:["Rain","🌧️"],65:["Heavy rain","🌧️"],
+  66:["Freezing rain","🌨️"],67:["Freezing rain","🌨️"],71:["Light snow","🌨️"],73:["Snow","❄️"],75:["Heavy snow","❄️"],
+  77:["Snow grains","❄️"],80:["Rain showers","🌦️"],81:["Rain showers","🌧️"],82:["Violent showers","⛈️"],
+  85:["Snow showers","🌨️"],86:["Snow showers","❄️"],95:["Thunderstorm","⛈️"],96:["Storm + hail","⛈️"],99:["Storm + hail","⛈️"]};
+const wmo=c=>WMO[c]||["—","🌡️"];
+
+/* ============================ SVG WEATHER ICONS ============================ */
+/* crisp, colorful icons that render identically on every OS (no emoji tofu) */
+function svgWrap(inner){return `<svg viewBox="0 0 64 64" class="wxi" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;}
+function rays(cx,cy,r){
+  let g='<g stroke="#ffb020" stroke-width="3.2" stroke-linecap="round">';
+  const R1=r+5,R2=r+11;
+  for(let a=0;a<360;a+=45){const t=a*Math.PI/180,c=Math.cos(t),s=Math.sin(t);
+    g+=`<line x1="${(cx+c*R1).toFixed(1)}" y1="${(cy+s*R1).toFixed(1)}" x2="${(cx+c*R2).toFixed(1)}" y2="${(cy+s*R2).toFixed(1)}"/>`;}
+  return g+'</g>';
+}
+function sunDisk(cx,cy,r){return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffb320"/><circle cx="${cx}" cy="${cy}" r="${r-3}" fill="#ffd451"/>`;}
+function cloudShapes(f){return `<ellipse cx="25" cy="41" rx="14" ry="11" fill="${f}"/><ellipse cx="41" cy="42" rx="12" ry="10" fill="${f}"/><ellipse cx="33" cy="31" rx="12.5" ry="12" fill="${f}"/><rect x="13" y="37" width="36" height="12" rx="6" fill="${f}"/>`;}
+function cloudLayers(dy,f){return `<g transform="translate(0,${dy})"><g transform="translate(0,3)">${cloudShapes('#c3cee0')}</g>${cloudShapes(f)}</g>`;}
+const ICON={
+  sun:  ()=>svgWrap(rays(32,32,12)+sunDisk(32,32,12)),
+  partly:()=>svgWrap(rays(21,20,8)+sunDisk(21,20,8)+cloudLayers(2,'#f2f6fc')),
+  cloud:()=>svgWrap(cloudLayers(0,'#eef3fb')),
+  fog:  ()=>svgWrap(cloudLayers(-6,'#e7edf6')+'<g stroke="#b8c4d8" stroke-width="3.2" stroke-linecap="round"><line x1="16" y1="50" x2="46" y2="50"/><line x1="21" y1="57" x2="50" y2="57"/></g>'),
+  rain: ()=>svgWrap(cloudLayers(-4,'#e7edf6')+'<g stroke="#4f97ff" stroke-width="3.2" stroke-linecap="round"><line x1="23" y1="47" x2="20" y2="56"/><line x1="32" y1="47" x2="29" y2="57"/><line x1="41" y1="47" x2="38" y2="56"/></g>'),
+  snow: ()=>svgWrap(cloudLayers(-4,'#e7edf6')+'<g fill="#bcd3f2"><circle cx="23" cy="51" r="2.6"/><circle cx="32" cy="54" r="2.6"/><circle cx="41" cy="51" r="2.6"/></g>'),
+  storm:()=>svgWrap(cloudLayers(-4,'#cdd6e6')+'<path d="M33 44 L24 57 L31 57 L28 65 L41 51 L34 51 L38 44 Z" fill="#ffcf3f" stroke="#f5a623" stroke-width="1"/>'),
+};
+function iconFor(code){
+  if(code===0) return ICON.sun();
+  if(code===1||code===2) return ICON.partly();
+  if(code===3) return ICON.cloud();
+  if(code===45||code===48) return ICON.fog();
+  if((code>=51&&code<=67)||(code>=80&&code<=82)) return ICON.rain();
+  if((code>=71&&code<=77)||code===85||code===86) return ICON.snow();
+  if(code>=95) return ICON.storm();
+  return ICON.cloud();
+}
+
+/* ============================ STATE / HELPERS ============================ */
+let STATE={lat:null,lon:null,name:"",data:null,air:null,units:"imperial"};
+const $=id=>document.getElementById(id);
+const round=n=>Math.round(n);
+const spdU=()=>STATE.units==="metric"?"km/h":"mph";
+const toF=t=>STATE.units==="metric"?t*9/5+32:t;      // for internal dog algorithm
+const toMph=s=>STATE.units==="metric"?s*0.621371:s;
+function windArrow(fromDeg){
+  if(fromDeg==null) return "";
+  const toward=(fromDeg+180)%360;
+  const a=["↑","↗","→","↘","↓","↙","←","↖"];
+  return a[Math.round(toward/45)%8];
+}
+
+/* ============================ GEOCODING ============================ */
+async function geocode(q){
+  const r=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=8&language=en&format=json`);
+  return (await r.json()).results||[];
+}
+const labelFor=p=>[p.name,p.admin1,p.country].filter(Boolean).join(", ");
+
+async function doSearch(){
+  const q=$("loc").value.trim(); if(!q) return;
+  const st=$("locStatus"); st.style.display="block"; st.className="loading"; st.textContent="Searching…";
+  $("picker").classList.remove("show");
+  let results; try{results=await geocode(q);}catch(e){st.className="err";st.textContent="Search failed. Check your connection.";return;}
+  if(!results.length){st.className="err";st.textContent=`No matches for “${q}”. Try another spelling.`;return;}
+  if(results.length===1){st.style.display="none";selectPlace(results[0]);}
+  else{
+    st.style.display="none";
+    const pk=$("picker");
+    pk.innerHTML=`<option value="" disabled selected>Choose the correct “${q}” (${results.length} matches)…</option>`+
+      results.map((p,i)=>`<option value="${i}">${labelFor(p)}</option>`).join("");
+    pk.classList.add("show"); pk._results=results;
+  }
+}
+$("picker").addEventListener("change",e=>{const r=$("picker")._results[+e.target.value];if(r)selectPlace(r);});
+function selectPlace(p){STATE.lat=p.latitude;STATE.lon=p.longitude;STATE.name=labelFor(p);$("loc").value=p.name;loadEverything();}
+
+/* ============================ FETCH ============================ */
+async function loadEverything(){
+  $("currentArea").innerHTML=`<div class="card"><div class="loading">Loading weather for ${STATE.name}…</div></div>`;
+  $("hourlyArea").innerHTML=""; $("dailyArea").innerHTML="";
+  $("allergySum").textContent="Loading…"; $("pollenGrid").innerHTML="";
+  try{
+    const [wx,air]=await Promise.all([fetchForecast(),fetchAir()]);
+    STATE.data=wx; STATE.air=air;
+    renderCurrent(); renderHourly(); renderDaily(); computeDogIndex(); renderPollen();
+  }catch(e){$("currentArea").innerHTML=`<div class="card"><div class="err">Couldn't load weather: ${e.message}</div></div>`;}
+}
+async function fetchForecast(){
+  const tu=STATE.units==="metric"?"celsius":"fahrenheit";
+  const su=STATE.units==="metric"?"kmh":"mph";
+  const u=`https://api.open-meteo.com/v1/forecast?latitude=${STATE.lat}&longitude=${STATE.lon}`+
+    `&current=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m`+
+    `&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index`+
+    `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,wind_direction_10m_dominant,uv_index_max`+
+    `&temperature_unit=${tu}&wind_speed_unit=${su}&timezone=auto&past_days=1&forecast_days=6`;
+  const r=await fetch(u); if(!r.ok) throw new Error("forecast "+r.status); return r.json();
+}
+async function fetchAir(){
+  const u=`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${STATE.lat}&longitude=${STATE.lon}`+
+    `&current=us_aqi,pm2_5,pm10,ozone&hourly=us_aqi,alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto`;
+  try{const r=await fetch(u);if(!r.ok)return null;return r.json();}catch(e){return null;}
+}
+const aqiCurrent=()=>STATE.air&&STATE.air.current?round(STATE.air.current.us_aqi):null;
+
+/* ============================ CURRENT ============================ */
+function renderCurrent(){
+  const c=STATE.data.current,desc=wmo(c.weather_code)[0];
+  $("currentArea").innerHTML=`
+  <div class="card">
+    <div class="cur">
+      <div class="ico">${iconFor(c.weather_code)}</div>
+      <div>
+        <div class="place">${STATE.name}</div>
+        <div class="temp">${round(c.temperature_2m)}°</div>
+        <div class="meta">${desc} · Feels like ${round(c.apparent_temperature)}°</div>
+      </div>
+      <div class="pills">
+        <div class="pill"><span>Humidity</span><b>${round(c.relative_humidity_2m)}%</b></div>
+        <div class="pill"><span>Wind ${windArrow(c.wind_direction_10m)}</span><b>${round(c.wind_speed_10m)} ${spdU()}</b></div>
+        <div class="pill"><span>Gusts</span><b>${round(c.wind_gusts_10m)} ${spdU()}</b></div>
+        <div class="pill"><span>Air (US AQI)</span><b>${aqiCurrent()!=null?aqiCurrent():"—"}</b></div>
+      </div>
+    </div>
+  </div>`;
+}
+function nowIndex(){
+  const times=STATE.data.hourly.time, nowIso=STATE.data.current.time.slice(0,13);
+  let idx=times.findIndex(t=>t.slice(0,13)===nowIso);
+  if(idx<0){const n=new Date(STATE.data.current.time).getTime();
+    idx=times.reduce((b,t,i)=>Math.abs(new Date(t)-n)<Math.abs(new Date(times[b])-n)?i:b,0);}
+  return idx;
+}
+function todayDailyIndex(){const d=STATE.data.daily,t=STATE.data.current.time.slice(0,10);let i=d.time.indexOf(t);return i<0?1:i;}
+
+/* ============================ HOURLY (trailing 12h + wind) ============================ */
+function renderHourly(){
+  const h=STATE.data.hourly,ni=nowIndex(),start=Math.max(0,ni-11);
+  let cells="";
+  for(let i=start;i<=ni;i++){
+    const dt=new Date(h.time[i]);
+    const hr=dt.toLocaleTimeString([],{hour:'numeric'});
+    const pop=h.precipitation_probability?.[i];
+    const w=round(h.wind_speed_10m[i]), ar=windArrow(h.wind_direction_10m[i]);
+    cells+=`<div class="hour ${i===ni?'now':''}">
+      <div class="t">${i===ni?'Now':hr}</div>
+      <div class="i">${iconFor(h.weather_code[i])}</div>
+      <div class="d">${round(h.temperature_2m[i])}°</div>
+      <div class="r">💧${pop!=null?pop:0}%</div>
+      <div class="w"><span class="ar">${ar}</span> ${w} ${spdU()}</div>
+    </div>`;
+  }
+  $("hourlyArea").innerHTML=`<div class="card">
+    <h2>🕐 Hourly · last 12 hours</h2>
+    <div class="hint">Temperature, rain chance and wind (arrow = direction). Current hour highlighted.</div>
+    <div class="hscroll">${cells}</div></div>`;
+}
+
+/* ============================ 5-DAY (styled + wind) ============================ */
+function renderDaily(){
+  const d=STATE.data.daily,ti=todayDailyIndex();
+  let cells="";
+  for(let i=ti;i<ti+5&&i<d.time.length;i++){
+    const dt=new Date(d.time[i]+"T12:00");
+    const dn=i===ti?"Today":dt.toLocaleDateString([],{weekday:'short'});
+    const pop=d.precipitation_probability_max?.[i];
+    const w=round(d.wind_speed_10m_max[i]), ar=windArrow(d.wind_direction_10m_dominant?.[i]);
+    cells+=`<div class="day ${i===ti?'today':''}">
+      <div class="dn">${dn}</div>
+      <div class="i">${iconFor(d.weather_code[i])}</div>
+      <div class="hi">${round(d.temperature_2m_max[i])}°</div>
+      <div class="lo">${round(d.temperature_2m_min[i])}°</div>
+      <div class="rn">💧 ${pop!=null?pop:0}%</div>
+      <div class="wn"><span class="ar">${ar}</span> ${w} ${spdU()}</div>
+    </div>`;
+  }
+  $("dailyArea").innerHTML=`<div class="card">
+    <h2>📅 5‑Day Forecast</h2>
+    <div class="hint">High / low, conditions, rain chance and wind.</div>
+    <div class="days">${cells}</div></div>`;
+}
+
+/* ============================ DOG WALK INDEX ============================ */
+/* core scorer shared by "now" and every forecast hour. All inputs in °F / mph. */
+function scoreCore(x,b){
+  const feels=x.feels,hum=x.hum,wind=x.wind,gust=x.gust??wind*1.4,aqi=x.aqi,uv=x.uv??4,pop=x.pop??0;
+  let heatThresh=78+(b.heat-3)*6; if(b.brachy)heatThresh-=10; if(b.size>=5)heatThresh-=4; if(b.coat>=3)heatThresh-=4;
+  let heatPen=0; if(feels>heatThresh)heatPen=Math.min(60,(feels-heatThresh)*3.2);
+  if(feels>heatThresh-6&&hum>60)heatPen+=(hum-60)*0.35;
+  let coldThresh=34-(b.cold-3)*6; if(b.size<=1)coldThresh+=8; if(b.coat<=1)coldThresh+=6;
+  let coldPen=0; if(feels<coldThresh)coldPen=Math.min(60,(coldThresh-feels)*2.6);
+  let windPen=0; if(gust>25)windPen=Math.min(35,(gust-25)*1.4); else if(wind>18)windPen=(wind-18)*1.2;
+  if(feels<coldThresh+10)windPen*=1.3;
+  let airPen=0; if(aqi!=null&&aqi>50)airPen=Math.min(45,(aqi-50)*0.5);
+  let fatigue=Math.max(0,feels-70)*0.9+Math.max(0,hum-55)*0.35+Math.max(0,uv-6)*3;
+  if(b.brachy)fatigue*=1.4; if(b.heat<=2)fatigue*=1.2; fatigue=Math.min(50,fatigue);
+  const precipPen=pop>40?Math.min(22,(pop-40)*0.4):0;
+  const total=heatPen+coldPen+windPen+airPen+fatigue*0.6+precipPen;
+  return {score:Math.max(0,Math.min(100,round(100-total))),heatPen,coldPen,windPen,airPen,fatigue,precipPen};
+}
+function levelOf(s){
+  if(s>=78)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#4ade80"};
+  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"Fine with a little care",color:"#facc15"};
+  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#ffb020"};
+  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#ff783c"};
+  return{lvl:"danger",stageN:5,emoji:"🛑",title:"DANGER",subtitle:"Better to stay indoors right now",color:"#ff5c6c"};
+}
+function durationFor(s){
+  if(s>=78)return"45–60+ min";
+  if(s>=60)return"30–45 min";
+  if(s>=42)return"15–20 min";
+  if(s>=25)return"5–10 min";
+  return"indoor play only";
+}
+/* US AQI for a specific hourly timestamp (falls back to current) */
+function aqiAt(iso){
+  const air=STATE.air; if(!air||!air.hourly||!air.hourly.us_aqi) return aqiCurrent();
+  const t=air.hourly.time; let i=t.indexOf(iso);
+  if(i<0)i=t.findIndex(x=>x.slice(0,13)===iso.slice(0,13));
+  return i>=0&&air.hourly.us_aqi[i]!=null?round(air.hourly.us_aqi[i]):aqiCurrent();
+}
+const hourStr=dt=>dt.toLocaleTimeString([],{hour:'numeric'});
+const hourLabel=hr=>hr.isToday?hourStr(hr.dt):hr.dt.toLocaleDateString([],{weekday:'short'})+' '+hourStr(hr.dt);
+
+/* build the from-now-to-end-of-day walkability outlook */
+function buildOutlook(b){
+  const h=STATE.data.hourly, ni=nowIndex(), todayStr=STATE.data.current.time.slice(0,10);
+  let endIdx=ni;
+  for(let i=ni;i<h.time.length;i++){ if(h.time[i].slice(0,10)===todayStr) endIdx=i; else break; }
+  if(endIdx-ni<4) endIdx=Math.min(h.time.length-1, ni+12);   // late in the day → peek into tomorrow
+  endIdx=Math.min(endIdx, ni+18);
+  const hours=[];
+  for(let i=ni;i<=endIdx;i++){
+    const iso=h.time[i], dt=new Date(iso);
+    const ctx={feels:toF(h.apparent_temperature[i]), hum:h.relative_humidity_2m[i],
+      wind:toMph(h.wind_speed_10m[i]), gust:toMph(h.wind_gusts_10m?.[i]??h.wind_speed_10m[i]*1.4),
+      aqi:aqiAt(iso), uv:h.uv_index?.[i]??4, pop:h.precipitation_probability?.[i]??0};
+    const s=scoreCore(ctx,b).score;
+    hours.push({i,iso,dt,isToday:iso.slice(0,10)===todayStr,score:s,
+      tempDisp:round(h.temperature_2m[i]),feelsDisp:round(h.apparent_temperature[i]),lvl:levelOf(s)});
+  }
+  return hours;
+}
+function pickWindow(hours){
+  const groups=mask=>{let res=[],cur=null;hours.forEach(hr=>{if(mask(hr.score)){if(!cur){cur={start:hr,end:hr,peak:hr};res.push(cur);}else{cur.end=hr;if(hr.score>cur.peak.score)cur.peak=hr;}}else cur=null;});return res;};
+  let g=groups(s=>s>=60),tier="good";
+  if(!g.length){g=groups(s=>s>=42);tier="caution";}
+  if(!g.length){const best=hours.reduce((a,z)=>z.score>a.score?z:a,hours[0]);return{none:true,tier:"none",start:best,end:best,peak:best};}
+  g.sort((a,z)=>z.peak.score-a.peak.score||(z.end.i-z.start.i)-(a.end.i-a.start.i));
+  const w=g[0]; return{none:false,tier,start:w.start,end:w.end,peak:w.peak};
+}
+function renderOutlook(hours,name){
+  const ni=nowIndex(), w=pickWindow(hours), dur=durationFor(w.peak.score);
+  const endPlus=new Date(w.end.dt.getTime()+3600000);
+  const endHr={dt:endPlus,isToday:w.end.isToday};
+  const endLabel=hourLabel(endHr);
+  const bt=$("bestTime"); bt.className="besttime lvl-"+w.peak.lvl.lvl;
+  if(w.none){
+    bt.innerHTML=`<div class="bt-emoji">🛑</div><div class="bt-txt">
+      <div class="bt-main">No safe walking window ${hours.some(x=>!x.isToday)?"in sight":"left today"}</div>
+      <div class="bt-sub">Conditions stay tough for ${name}. Best is around <b>${hourLabel(w.peak)}</b> (still ${w.peak.lvl.title.toLowerCase()}) — limit to a <b>${dur}</b> potty break.</div></div>`;
+  } else if(w.tier==="caution"){
+    bt.innerHTML=`<div class="bt-emoji">⚠️</div><div class="bt-txt">
+      <div class="bt-main">Best window: <b>${hourLabel(w.start)}–${endLabel}</b></div>
+      <div class="bt-sub">Not ideal today for ${name} — keep it to <b>${dur}</b> with shade &amp; water. Easiest around ${hourLabel(w.peak)}.</div></div>`;
+  } else {
+    const lead=w.start.i===ni?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`;
+    bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
+      <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
+      <div class="bt-sub">Comfortable for a <b>${dur}</b> walk · feels around ${w.peak.feelsDisp}°.</div></div>`;
+  }
+  $("timeline").innerHTML=hours.map(hr=>{
+    const best=!w.none&&hr.i>=w.start.i&&hr.i<=w.end.i;
+    return `<div class="tl-cell ${best?'best':''}">
+      <div class="tl-time">${hr.i===ni?'Now':hourLabel(hr)}</div>
+      <div class="tl-bar"><i style="height:${Math.max(6,hr.score)}%;background:${hr.lvl.color}"></i></div>
+      <div class="tl-em">${hr.lvl.emoji}</div>
+      <div class="tl-temp">${hr.tempDisp}°</div></div>`;
+  }).join("");
+  $("tlTitle").textContent=hours.some(x=>!x.isToday)?"Walkability — next hours":"Rest‑of‑day walkability";
+  $("tlLegend").innerHTML=[["Safe","#4ade80"],["Good","#facc15"],["Caution","#ffb020"],["Risky","#ff783c"],["Danger","#ff5c6c"]]
+    .map(([l,c])=>`<span><span class="dot" style="width:8px;height:8px;background:${c}"></span>${l}</span>`).join("");
+}
+
+function computeDogIndex(){
+  if(!STATE.data) return;
+  const c=STATE.data.current;
+  const b=BREEDS[$("breed").value]||BREEDS["Generic / Mixed"];
+  const rawName=$("dogName").value.trim(), name=rawName||"your dog";
+
+  $("dogTitleName").textContent=rawName;
+  $("greet").style.display=rawName?"block":"none";
+  if(rawName) $("greet").innerHTML=`Walk check for <span>${rawName}</span> — ${$("breed").value}`;
+
+  const feels=toF(c.apparent_temperature), hum=c.relative_humidity_2m;
+  const wind=toMph(c.wind_speed_10m), gust=toMph(c.wind_gusts_10m);
+  const aqi=aqiCurrent(), uv=STATE.data.daily.uv_index_max?.[todayDailyIndex()]??4;
+  const dispFeels=round(c.apparent_temperature), dispWind=round(c.wind_speed_10m), dispGust=round(c.wind_gusts_10m);
+
+  const pop=STATE.data.hourly.precipitation_probability?.[nowIndex()]??0;
+  const core=scoreCore({feels,hum,wind,gust,aqi,uv,pop},b);
+  const {heatPen,coldPen,windPen,airPen,fatigue}=core, score=core.score;
+  const L=levelOf(score), lvl=L.lvl;
+
+  const g=$("dogGauge"); g.className="gauge lvl-"+lvl;
+  $("dogEmoji").textContent=L.emoji;
+  $("dogTitle").innerHTML=`${L.title}<small>${L.subtitle}</small>`;
+  $("dogNum").innerHTML=`${score}<small>/ 100</small>`;
+  [...$("stages").children].forEach((el,i)=>el.classList.toggle("active",i===L.stageN-1));
+
+  // rest-of-day outlook: best time to walk + hourly walkability
+  renderOutlook(buildOutlook(b), name);
+
+  // dominant concern
+  const issues=[{k:"heat",v:heatPen},{k:"cold",v:coldPen},{k:"wind",v:windPen},{k:"air",v:airPen},{k:"fatigue",v:fatigue*0.6}].sort((a,z)=>z.v-a.v);
+  const top=issues[0]; let verdict;
+  if(score>=78) verdict=`Comfortable out there for ${name}. Enjoy the walk — bring water anyway.`;
+  else if(top.k==="heat") verdict=`Main concern for ${name}: <b>heat</b> — feels like ${dispFeels}°, above this breed's comfort zone.`;
+  else if(top.k==="cold") verdict=`Main concern for ${name}: <b>cold</b> — feels like ${dispFeels}°, chilly for this breed.`;
+  else if(top.k==="wind") verdict=`Main concern for ${name}: <b>wind</b> — gusts to ${dispGust} ${spdU()}.`;
+  else if(top.k==="air") verdict=`Main concern for ${name}: <b>air quality</b> — US AQI ${aqi}.`;
+  else verdict=`Main concern for ${name}: <b>fatigue / exertion</b> — keep it short and shaded.`;
+  $("dogVerdict").innerHTML=verdict;
+
+  // factor bars
+  const fac=(label,pen,max,val,color)=>{
+    const pct=Math.min(100,pen/max*100), load=pct<20?"Low":pct<50?"Moderate":pct<75?"High":"Severe";
+    return `<div class="factor"><div class="fl"><span>${label}</span><b>${load}</b></div>
+      <div class="fv">${val}</div><div class="fbar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
+  };
+  $("dogFactors").innerHTML=
+    fac("🌡️ Heat",heatPen,60,`Feels ${dispFeels}°`,"var(--danger)")+
+    fac("❄️ Cold",coldPen,60,`Feels ${dispFeels}°`,"var(--cold)")+
+    fac("💨 Wind",windPen,35,`${dispWind} (g${dispGust}) ${spdU()}`,"var(--accent)")+
+    fac("🌫️ Air quality",airPen,45,aqi!=null?`AQI ${aqi}`:"n/a","var(--warn)")+
+    fac("😮‍💨 Fatigue",fatigue*0.6,30,`Hum ${round(hum)}% · UV ${round(uv)}`,"var(--accent2)");
+
+  // recommendations (incl. breed-specific)
+  const recs=[]; const heavyHeat=heatPen>25,mildHeat=heatPen>8,heavyCold=coldPen>25,mildCold=coldPen>8;
+  recs.push(["breed","🐕",breedNote(name,b)]);
+  if(heavyHeat){
+    recs.push(["","🥵",`Too hot for ${name}. Walk at dawn/dusk, stay on grass/shade, and <b>test the pavement</b> — if it's too hot for your hand for 7 seconds, it's too hot for paws.`]);
+    recs.push(["","💧",`Bring water and take frequent breaks. Watch for heavy panting, drooling or lagging behind.`]);
+    if(b.brachy) recs.push(["","🐽",`Flat‑faced breeds overheat fast — keep it very short and never leave in a car.`]);
+  } else if(mildHeat){ recs.push(["","☀️",`A bit warm — favor shade, bring water, keep the pace easy.`]); }
+  if(heavyCold){
+    recs.push(["","🧥",`Too cold for ${name}. Put on a <b>warm insulated coat/sweater</b> and consider <b>paw booties</b> or paw balm.`]);
+    recs.push(["","⏱️",`Keep the outing short; watch for shivering or lifting paws.`]);
+  } else if(mildCold){ recs.push(["","🧣",`Chilly out — a light sweater is a good idea for ${name}, especially if short‑haired.`]); }
+  if(windPen>15) recs.push(["","💨",`Gusty wind — pick sheltered routes and watch for flying debris.`]);
+  if(airPen>15) recs.push(["","😷",`Air quality is elevated (AQI ${aqi}). Shorten vigorous play, especially for flat‑faced or senior dogs.`]);
+  if(fatigue*0.6>18) recs.push(["","😮‍💨",`High exertion load — swap running/fetch for a gentle sniff‑walk to avoid overheating.`]);
+  if(uv>=8&&!heavyCold) recs.push(["","🕶️",`Strong sun (UV ${round(uv)}) — protect thin‑coated noses & ears; seek shade.`]);
+  if(recs.length===1) recs.push(["","✅",`No special gear needed — great conditions. Have fun, ${name}!`]);
+  $("dogRecs").innerHTML=recs.map(([cls,em,t])=>`<div class="rec ${cls}"><span class="em">${em}</span><span>${t}</span></div>`).join("");
+
+  // warning banner
+  const wb=$("warnBanner"),wt=$("warnText");
+  if(lvl==="danger"&&heatPen>=coldPen){wb.className="warnbanner show";wt.innerHTML=`Too hot to safely walk ${name} right now (feels like ${dispFeels}°). Wait for cooler hours.`;}
+  else if(lvl==="danger"){wb.className="warnbanner show";wt.innerHTML=`Too cold/harsh for ${name} right now (feels like ${dispFeels}°). Bundle up and keep it very short.`;}
+  else if(heavyHeat){wb.className="warnbanner show";wt.innerHTML=`Heat caution for ${name} — walk in cooler hours and check the pavement temperature.`;}
+  else{wb.className="warnbanner";}
+}
+
+/* ============================ POLLEN ============================ */
+function pollenLevel(v){
+  if(v==null)return null;
+  if(v<10)return{l:"Low",c:"#4ade80",pct:15};
+  if(v<30)return{l:"Moderate",c:"#facc15",pct:45};
+  if(v<70)return{l:"High",c:"#fb923c",pct:72};
+  return{l:"Very high",c:"#ff5c6c",pct:95};
+}
+function airNowIndex(){const t=STATE.air.hourly.time,nowIso=STATE.data.current.time.slice(0,13);let i=t.findIndex(x=>x.slice(0,13)===nowIso);return i<0?0:i;}
+function renderPollen(){
+  const grid=$("pollenGrid"),sum=$("allergySum"),note=$("pollenNote"),air=STATE.air;
+  const types=[["Grass","grass_pollen","🌱"],["Birch","birch_pollen","🌳"],["Alder","alder_pollen","🌲"],
+    ["Olive","olive_pollen","🫒"],["Mugwort","mugwort_pollen","🌿"],["Ragweed","ragweed_pollen","🌾"]];
+  let have=false,vals=[];
+  if(air&&air.hourly){
+    const ni=airNowIndex();let out="";
+    for(const[label,key,em]of types){
+      const v=air.hourly[key]?air.hourly[key][ni]:null,lv=pollenLevel(v);
+      if(v!=null){have=true;vals.push(v);}
+      out+=`<div class="pcell"><div class="pn"><span>${em} ${label}</span>${lv?`<span class="dot" style="background:${lv.c}"></span>`:''}</div>
+        <div class="pl" style="color:${lv?lv.c:'var(--muted)'}">${lv?lv.l:'No data'}</div>
+        <div class="pbar"><i style="width:${lv?lv.pct:0}%;background:${lv?lv.c:'transparent'}"></i></div></div>`;
+    }
+    grid.innerHTML=out;
+  }
+  if(have){
+    const mx=Math.max(...vals),lv=pollenLevel(mx);
+    sum.innerHTML=`<span class="dot" style="background:${lv.c};width:14px;height:14px"></span>
+      <span><b>Overall allergy index: ${lv.l}</b> — peak airborne pollen ~${round(mx)} grains/m³. ${lv.l==="Low"?"Comfortable for most allergy sufferers.":lv.l==="Moderate"?"Sensitive people may notice symptoms.":"Allergy sufferers should limit time outdoors and keep windows closed."}</span>`;
+    note.textContent="Live pollen from Open‑Meteo (current‑hour surface concentrations).";
+  }else{
+    const est=seasonalPollenEstimate();
+    sum.innerHTML=`<span class="dot" style="background:${est.c};width:14px;height:14px"></span>
+      <span><b>Allergy index (seasonal estimate): ${est.l}</b> — ${est.msg}</span>`;
+    grid.innerHTML=est.items.map(it=>`<div class="pcell"><div class="pn"><span>${it.em} ${it.label}</span><span class="dot" style="background:${it.c}"></span></div>
+      <div class="pl" style="color:${it.c}">${it.lvl}</div><div class="pbar"><i style="width:${it.pct}%;background:${it.c}"></i></div></div>`).join("");
+    note.textContent="Live pollen data isn't available for this region, so this is a seasonal estimate from the calendar month and hemisphere. For medical decisions, check a local pollen service.";
+  }
+}
+function seasonalPollenEstimate(){
+  const m=new Date(STATE.data.current.time).getMonth(),north=STATE.lat>=0,sm=north?m:(m+6)%12;
+  const tree=[1,2,3,4].includes(sm)?"High":[0,5].includes(sm)?"Moderate":"Low";
+  const grass=[4,5,6,7].includes(sm)?"High":[3,8].includes(sm)?"Moderate":"Low";
+  const weed=[7,8,9].includes(sm)?"High":[6,10].includes(sm)?"Moderate":"Low";
+  const map={"Low":{c:"#4ade80",pct:18},"Moderate":{c:"#facc15",pct:50},"High":{c:"#fb923c",pct:78}};
+  const items=[{label:"Tree pollen",em:"🌳",lvl:tree,...map[tree]},{label:"Grass pollen",em:"🌱",lvl:grass,...map[grass]},{label:"Weed / Ragweed",em:"🌾",lvl:weed,...map[weed]}];
+  const worst=[tree,grass,weed].includes("High")?"High":[tree,grass,weed].includes("Moderate")?"Moderate":"Low";
+  const msg=worst==="High"?"Peak season for at least one allergen — sensitive people may want antihistamines and to limit midday outdoor time."
+    :worst==="Moderate"?"Some allergens active — mild symptoms possible for sensitive people.":"Generally low pollen season — comfortable for most.";
+  return{l:worst,c:map[worst].c,msg,items};
+}
+
+/* ============================ EVENTS / INIT ============================ */
+$("searchBtn").addEventListener("click",doSearch);
+$("loc").addEventListener("keydown",e=>{if(e.key==="Enter")doSearch();});
+$("geoBtn").addEventListener("click",()=>{
+  if(!navigator.geolocation){alert("Geolocation not supported.");return;}
+  const st=$("locStatus");st.style.display="block";st.className="loading";st.textContent="Locating…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    STATE.lat=pos.coords.latitude;STATE.lon=pos.coords.longitude;
+    STATE.name=`My location (${STATE.lat.toFixed(2)}, ${STATE.lon.toFixed(2)})`;st.style.display="none";loadEverything();
+  },()=>{st.className="err";st.textContent="Couldn't get your location. Search instead.";});
+});
+$("units").addEventListener("click",e=>{
+  const btn=e.target.closest("button"); if(!btn) return;
+  const u=btn.dataset.u; if(u===STATE.units) return;
+  STATE.units=u; localStorage.setItem("wfd_units",u);
+  [...$("units").children].forEach(b=>b.classList.toggle("on",b.dataset.u===u));
+  if(STATE.lat!=null) loadEverything();
+});
+
+(function initBreeds(){$("breed").innerHTML=Object.keys(BREEDS).map(b=>`<option>${b}</option>`).join("");})();
+
+const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units";
+(function restore(){
+  const n=localStorage.getItem(NAME_KEY); if(n){$("dogName").value=n;$("dogTitleName").textContent=n.trim();}
+  const b=localStorage.getItem(BREED_KEY); if(b&&BREEDS[b])$("breed").value=b;
+  const u=localStorage.getItem(UNIT_KEY); if(u){STATE.units=u;[...$("units").children].forEach(x=>x.classList.toggle("on",x.dataset.u===u));}
+})();
+$("dogName").addEventListener("input",e=>{localStorage.setItem(NAME_KEY,e.target.value);$("dogTitleName").textContent=e.target.value.trim();if(STATE.data)computeDogIndex();});
+$("breed").addEventListener("change",e=>{localStorage.setItem(BREED_KEY,e.target.value);if(STATE.data)computeDogIndex();});
+
+/* default: Palo Alto, California */
+(function boot(){
+  STATE.lat=37.4419;STATE.lon=-122.1430;STATE.name="Palo Alto, California, United States";
+  $("loc").value="Palo Alto";loadEverything();
+})();
+</script>
+</body>
+</html>
