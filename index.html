@@ -10,8 +10,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#151019; --panel:#231e2c; --panel2:#2d2739; --line:#3d3652;
-    --text:#f3eef8; --muted:#aca1ba; --accent:#6ba6ff; --accent2:#7ff0c6;
+    --bg:#181119; --panel:#2a2029; --panel2:#352a35; --line:#48394a;
+    --text:#f5eef4; --muted:#b6a6b2; --accent:#6ba6ff; --accent2:#7ff0c6;
     --warm:#ffb27a;
     --warn:#ffb020; --danger:#ff6b74; --good:#54df88; --cold:#8fd3ff;
     --radius:16px; --shadow:0 10px 34px rgba(0,0,0,.42);
@@ -21,9 +21,10 @@
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:
-      radial-gradient(1100px 520px at 82% -12%, rgba(255,170,112,.17), transparent 60%),
-      radial-gradient(880px 460px at 10% 2%, rgba(255,120,150,.09), transparent 55%),
-      linear-gradient(180deg,#1e1826 0%, var(--bg) 60%);
+      radial-gradient(1200px 560px at 85% -14%, rgba(255,158,86,.26), transparent 60%),
+      radial-gradient(950px 520px at 6% 3%, rgba(255,120,120,.13), transparent 55%),
+      radial-gradient(820px 660px at 50% 118%, rgba(255,150,80,.10), transparent 62%),
+      linear-gradient(180deg,#2a1c22 0%, var(--bg) 60%);
     background-attachment:fixed;
     color:var(--text); min-height:100vh;
     padding:18px 14px calc(46px + env(safe-area-inset-bottom));
@@ -33,12 +34,16 @@
   /* header + mascot */
   header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
     margin:0 -14px 18px;padding:10px 14px;
-    background:linear-gradient(180deg,rgba(21,16,25,.97) 0%,rgba(21,16,25,.84) 100%);
+    background:linear-gradient(180deg,rgba(30,18,24,.97) 0%,rgba(30,18,24,.82) 100%);
     backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15);
     border-bottom:1px solid var(--line)}
   .corgi{width:clamp(66px,16vw,92px);height:auto;flex:0 0 auto;display:block;
     filter:drop-shadow(0 5px 12px rgba(0,0,0,.3));
     animation:bob 3.6s ease-in-out infinite;transform-origin:50% 90%}
+  /* decorative paw-print trail, top mid → right of header */
+  .pawtrail{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+  .paw{position:absolute;fill:var(--accent2);filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+  .htext,.units,.corgi{position:relative;z-index:1}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
   .htext{flex:1;min-width:0}
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
@@ -53,14 +58,16 @@
   .units button{background:transparent;color:var(--muted);border:none;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
   .units button.on{background:var(--accent);color:#04122b}
 
-  .card{background:linear-gradient(180deg,var(--panel) 0%,#1a1522 100%);border:1px solid var(--line);
+  .card{background:linear-gradient(180deg,var(--panel) 0%,#20141c 100%);border:1px solid var(--line);
     border-radius:var(--radius);padding:clamp(14px,4vw,20px);box-shadow:var(--shadow);margin-bottom:16px}
   .card h2{margin:0 0 4px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;
     text-transform:uppercase;letter-spacing:.6px}
   .card .hint{color:var(--muted);font-size:12px;margin-bottom:14px}
 
   /* search */
-  .searchbar{display:flex;flex-wrap:wrap;gap:8px}
+  .searchbar{display:flex;flex-wrap:wrap;gap:8px;
+    background:linear-gradient(180deg,rgba(107,166,255,.11),rgba(107,166,255,.03));
+    border:1px solid rgba(107,166,255,.34);border-radius:13px;padding:11px}
   input[type=text],select{background:var(--panel2);border:1px solid var(--line);color:var(--text);
     padding:11px 13px;border-radius:11px;font-size:16px;outline:none;transition:border .15s;-webkit-appearance:none}
   input[type=text]:focus,select:focus{border-color:var(--accent)}
@@ -74,14 +81,19 @@
   .err{color:var(--danger);font-size:13px;padding:8px 0}
 
   /* current */
-  .cur{display:flex;flex-wrap:wrap;align-items:center;gap:16px}
-  .cur .ico{font-size:clamp(46px,13vw,58px)}
-  .cur .temp{font-size:clamp(40px,12vw,56px);font-weight:800;line-height:1}
-  .cur .place{font-size:clamp(15px,4vw,18px);font-weight:700}
-  .cur .meta{color:var(--muted);font-size:13.5px;line-height:1.6}
-  .pills{display:flex;flex-wrap:wrap;gap:8px;width:100%}
-  .pill{flex:1 1 70px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:9px 6px;font-size:12px;text-align:center}
-  .pill b{display:block;font-size:15px;margin-top:2px} .pill span{color:var(--muted)}
+  .cur-card{padding:clamp(12px,3.2vw,16px)}
+  .cur{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px}
+  .cur-left{display:flex;align-items:center;gap:14px;min-width:0}
+  .cur .ico{font-size:clamp(40px,11vw,52px)}
+  .cur .temp{font-size:clamp(34px,10vw,46px);font-weight:800;line-height:1}
+  .cur .place{font-size:clamp(14px,3.6vw,16px);font-weight:700}
+  .cur .meta{color:var(--muted);font-size:12.5px;line-height:1.45;margin-top:2px}
+  .cur-metrics{display:grid;grid-template-columns:repeat(2,minmax(124px,1fr));gap:8px;flex:0 1 auto}
+  .pill{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:9px 13px;font-size:12.5px}
+  .pill span{color:var(--muted);white-space:nowrap}
+  .pill b{font-size:16px;font-weight:800}
+  @media(max-width:560px){.cur-metrics{flex:1 1 100%;grid-template-columns:repeat(2,1fr)}}
 
   /* hourly (matches reference) */
   .hscroll{display:flex;gap:9px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
@@ -114,7 +126,13 @@
   }
 
   /* dog card */
-  .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+  .entrygrid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
+  .entry-loc{flex:1 1 320px;min-width:0;display:flex;flex-direction:column}
+  .entry-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .entry-label.loc{color:var(--accent)}
+  .doginputs{flex:1 1 300px;display:flex;flex-wrap:wrap;gap:12px;
+    background:linear-gradient(180deg,rgba(124,240,196,.11),rgba(124,240,196,.03));
+    border:1px solid rgba(124,240,196,.34);border-radius:13px;padding:13px}
   .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px}
   .doginputs label{font-size:11px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   .doginputs input,.doginputs select{width:100%}
@@ -134,12 +152,15 @@
   .gauge.lvl-caution{background:linear-gradient(180deg,rgba(255,176,32,.15),transparent);border-color:rgba(255,176,32,.5)}
   .gauge.lvl-risky{background:linear-gradient(180deg,rgba(255,120,60,.16),transparent);border-color:rgba(255,120,60,.55)}
   .gauge.lvl-danger{background:linear-gradient(180deg,rgba(255,92,108,.18),transparent);border-color:rgba(255,92,108,.6)}
-  .gscore{display:flex;align-items:center;gap:12px}
-  .gscore .em{font-size:34px;line-height:1}
-  .gscore .tt{font-size:17px;font-weight:800;line-height:1.2}
-  .gscore .tt small{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px}
-  .gscore .num{margin-left:auto;font-size:28px;font-weight:800;text-align:right}
-  .gscore .num small{display:block;font-size:11px;color:var(--muted);font-weight:600}
+  .gscore{display:flex;align-items:center;gap:14px}
+  .ring{width:68px;height:68px;border-radius:50%;flex:0 0 auto;
+    background:conic-gradient(var(--c,var(--accent2)) calc(var(--p,0)*1%), rgba(255,255,255,.09) 0);
+    display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+  .ring-in{width:53px;height:53px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
+  .ring-in span{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  .tt-wrap{min-width:0;flex:1}
+  .tt-title{font-size:18px;font-weight:800;line-height:1.15}
+  .tt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
 
   /* clear condition-stage scale */
   .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:16px 0 6px}
@@ -187,16 +208,15 @@
     display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:9px}
   .tllegend{display:flex;flex-wrap:wrap;gap:4px 10px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
   .tllegend span{display:inline-flex;align-items:center;gap:4px;font-size:11px}
-  .timeline{display:flex;gap:6px;overflow-x:auto;padding-bottom:8px;-webkit-overflow-scrolling:touch}
-  .timeline::-webkit-scrollbar{height:6px}.timeline::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px}
-  .tl-cell{flex:0 0 auto;width:52px;background:var(--panel2);border:1px solid var(--line);border-radius:11px;
-    padding:8px 4px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .tl-cell.best{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;background:rgba(124,240,196,.08)}
-  .tl-time{font-size:10.5px;color:var(--muted);font-weight:600;white-space:nowrap}
-  .tl-bar{width:9px;height:44px;background:#17121f;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
+  .timeline{display:flex;gap:clamp(3px,1vw,6px)}
+  .tl-cell{flex:1 1 0;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
+    padding:8px 2px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .tl-cell.best{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;background:rgba(124,240,196,.10)}
+  .tl-time{font-size:clamp(9px,2.3vw,10.5px);color:var(--muted);font-weight:700;white-space:nowrap}
+  .tl-bar{width:7px;height:40px;background:#17121f;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
   .tl-bar i{display:block;width:100%;border-radius:6px}
-  .tl-em{font-size:13px;line-height:1}
-  .tl-temp{font-size:12px;font-weight:700}
+  .tl-em{font-size:clamp(11px,2.7vw,13px);line-height:1}
+  .tl-temp{font-size:clamp(10px,2.5vw,12px);font-weight:700}
   .nowlbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;
     display:flex;align-items:center;gap:8px}
   .nowlbl::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -218,6 +238,14 @@
 <body>
 <div class="wrap">
   <header class="top">
+    <div class="pawtrail" aria-hidden="true">
+      <svg width="0" height="0" style="position:absolute"><symbol id="pawIcon" viewBox="0 0 64 64"><ellipse cx="32" cy="43" rx="15" ry="12.5"/><ellipse cx="14" cy="27" rx="6" ry="8.2" transform="rotate(-18 14 27)"/><ellipse cx="26" cy="17" rx="6" ry="8.6"/><ellipse cx="39" cy="17" rx="6" ry="8.6"/><ellipse cx="50" cy="27" rx="6" ry="8.2" transform="rotate(18 50 27)"/></symbol></svg>
+      <svg class="paw" style="left:50%;top:52%;width:22px;height:22px;opacity:.15;transform:rotate(14deg)"><use href="#pawIcon"/></svg>
+      <svg class="paw" style="left:60%;top:12%;width:28px;height:28px;opacity:.22;transform:rotate(32deg)"><use href="#pawIcon"/></svg>
+      <svg class="paw" style="left:71%;top:50%;width:23px;height:23px;opacity:.16;transform:rotate(16deg)"><use href="#pawIcon"/></svg>
+      <svg class="paw" style="left:81%;top:10%;width:31px;height:31px;opacity:.22;transform:rotate(30deg)"><use href="#pawIcon"/></svg>
+      <svg class="paw" style="left:92%;top:48%;width:22px;height:22px;opacity:.15;transform:rotate(18deg)"><use href="#pawIcon"/></svg>
+    </div>
     <svg class="corgi" viewBox="0 0 200 210" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly dog sketch">
       <g fill="#eef2fa" stroke="#c5d0e6" stroke-width="3">
         <!-- tail -->
@@ -260,17 +288,32 @@
     </div>
   </header>
 
-  <!-- LOCATION -->
+  <!-- ENTRY: location + dog, one combined area -->
   <div class="card">
-    <h2>📍 Location</h2>
-    <div class="hint">Type a city. If several match, pick the right one from the menu.</div>
-    <div class="searchbar">
-      <input type="text" id="loc" placeholder="e.g. Palo Alto" autocomplete="off">
-      <button class="act" id="searchBtn">Search</button>
-      <button class="ghost" id="geoBtn" title="Use my location">📌</button>
+    <h2>📍 Set up your walk</h2>
+    <div class="hint">Enter your location, plus your dog's name &amp; breed — we'll remember them.</div>
+    <div class="entrygrid">
+      <div class="entry-loc">
+        <label class="entry-label loc">📍 Location</label>
+        <div class="searchbar">
+          <input type="text" id="loc" placeholder="e.g. Palo Alto" autocomplete="off">
+          <button class="act" id="searchBtn">Search</button>
+          <button class="ghost" id="geoBtn" title="Use my location">📌</button>
+        </div>
+        <select class="picker" id="picker"></select>
+        <div id="locStatus" class="loading" style="display:none"></div>
+      </div>
+      <div class="doginputs">
+        <div class="fld">
+          <label for="dogName">🐶 Your dog's name</label>
+          <input type="text" id="dogName" placeholder="e.g. Biscuit">
+        </div>
+        <div class="fld">
+          <label for="breed">🦴 Breed</label>
+          <select id="breed"></select>
+        </div>
+      </div>
     </div>
-    <select class="picker" id="picker"></select>
-    <div id="locStatus" class="loading" style="display:none"></div>
   </div>
 
   <div id="currentArea"></div>
@@ -279,16 +322,6 @@
   <div class="card hero" id="dogCard">
     <h2>🐾 Doggie Walk &amp; Play Index</h2>
     <div class="hint">When is the best time to walk or play outside today — and for how long? We weigh temperature, wind, air quality and fatigue for your dog's breed, hour by hour.</div>
-    <div class="doginputs">
-      <div class="fld">
-        <label for="dogName">🐶 Your dog's name</label>
-        <input type="text" id="dogName" placeholder="e.g. Biscuit">
-      </div>
-      <div class="fld">
-        <label for="breed">🦴 Breed</label>
-        <select id="breed"></select>
-      </div>
-    </div>
     <div class="greet" id="greet" style="display:none"></div>
     <div class="warnbanner" id="warnBanner"><span class="wi">⚠️</span><span id="warnText"></span></div>
 
@@ -302,9 +335,11 @@
     <div class="nowlbl">Right now</div>
     <div class="gauge" id="dogGauge">
       <div class="gscore">
-        <span class="em" id="dogEmoji">🐶</span>
-        <span class="tt" id="dogTitle">—<small id="dogTitleSub">Enter a location to begin</small></span>
-        <span class="num" id="dogNum">—<small>/ 100</small></span>
+        <div class="ring" id="dogRing"><div class="ring-in"><span id="dogNum">—</span></div></div>
+        <div class="tt-wrap">
+          <div class="tt-title" id="dogTitle">—</div>
+          <div class="tt-sub" id="dogTitleSub">Enter a location to begin</div>
+        </div>
       </div>
       <div class="stages" id="stages">
         <div class="stage s1"><span class="se">🟢</span>Safe</div>
@@ -500,19 +535,21 @@ const aqiCurrent=()=>STATE.air&&STATE.air.current?round(STATE.air.current.us_aqi
 function renderCurrent(){
   const c=STATE.data.current,desc=wmo(c.weather_code)[0];
   $("currentArea").innerHTML=`
-  <div class="card">
+  <div class="card cur-card">
     <div class="cur">
-      <div class="ico">${iconFor(c.weather_code)}</div>
-      <div>
-        <div class="place">${STATE.name}</div>
-        <div class="temp">${round(c.temperature_2m)}°</div>
-        <div class="meta">${desc} · Feels like ${round(c.apparent_temperature)}°</div>
+      <div class="cur-left">
+        <div class="ico">${iconFor(c.weather_code)}</div>
+        <div>
+          <div class="place">${STATE.name}</div>
+          <div class="temp">${round(c.temperature_2m)}°</div>
+          <div class="meta">${desc} · Feels like ${round(c.apparent_temperature)}°</div>
+        </div>
       </div>
-      <div class="pills">
-        <div class="pill"><span>Humidity</span><b>${round(c.relative_humidity_2m)}%</b></div>
-        <div class="pill"><span>Wind ${windArrow(c.wind_direction_10m)}</span><b>${round(c.wind_speed_10m)} ${spdU()}</b></div>
-        <div class="pill"><span>Gusts</span><b>${round(c.wind_gusts_10m)} ${spdU()}</b></div>
-        <div class="pill"><span>Air (US AQI)</span><b>${aqiCurrent()!=null?aqiCurrent():"—"}</b></div>
+      <div class="cur-metrics">
+        <div class="pill"><span>💧 Humidity</span><b>${round(c.relative_humidity_2m)}%</b></div>
+        <div class="pill"><span>${windArrow(c.wind_direction_10m)} Wind</span><b>${round(c.wind_speed_10m)} ${spdU()}</b></div>
+        <div class="pill"><span>🌬 Gusts</span><b>${round(c.wind_gusts_10m)} ${spdU()}</b></div>
+        <div class="pill"><span>🌫 AQI</span><b>${aqiCurrent()!=null?aqiCurrent():"—"}</b></div>
       </div>
     </div>
   </div>`;
@@ -614,14 +651,12 @@ function aqiAt(iso){
 }
 const hourStr=dt=>dt.toLocaleTimeString([],{hour:'numeric'});
 const hourLabel=hr=>hr.isToday?hourStr(hr.dt):hr.dt.toLocaleDateString([],{weekday:'short'})+' '+hourStr(hr.dt);
+const tlShort=dt=>{let h=dt.getHours();const ap=h<12?'a':'p';h=h%12;if(h===0)h=12;return h+ap;};
 
-/* build the from-now-to-end-of-day walkability outlook */
+/* build the next-12-hours walkability outlook */
 function buildOutlook(b){
   const h=STATE.data.hourly, ni=nowIndex(), todayStr=STATE.data.current.time.slice(0,10);
-  let endIdx=ni;
-  for(let i=ni;i<h.time.length;i++){ if(h.time[i].slice(0,10)===todayStr) endIdx=i; else break; }
-  if(endIdx-ni<4) endIdx=Math.min(h.time.length-1, ni+12);   // late in the day → peek into tomorrow
-  endIdx=Math.min(endIdx, ni+18);
+  const endIdx=Math.min(h.time.length-1, ni+11);   // always 12 cells: now + next 11
   const hours=[];
   for(let i=ni;i<=endIdx;i++){
     const iso=h.time[i], dt=new Date(iso);
@@ -665,12 +700,12 @@ function renderOutlook(hours,name){
   $("timeline").innerHTML=hours.map(hr=>{
     const best=!w.none&&hr.i>=w.start.i&&hr.i<=w.end.i;
     return `<div class="tl-cell ${best?'best':''}">
-      <div class="tl-time">${hr.i===ni?'Now':hourLabel(hr)}</div>
+      <div class="tl-time">${hr.i===ni?'Now':tlShort(hr.dt)}</div>
       <div class="tl-bar"><i style="height:${Math.max(6,hr.score)}%;background:${hr.lvl.color}"></i></div>
       <div class="tl-em">${hr.lvl.emoji}</div>
       <div class="tl-temp">${hr.tempDisp}°</div></div>`;
   }).join("");
-  $("tlTitle").textContent=hours.some(x=>!x.isToday)?"Walkability — next hours":"Rest‑of‑day walkability";
+  $("tlTitle").textContent="Walkability · next 12 hours";
   $("tlLegend").innerHTML=[["Safe","#4ade80"],["Good","#facc15"],["Caution","#ffb020"],["Risky","#ff783c"],["Danger","#ff5c6c"]]
     .map(([l,c])=>`<span><span class="dot" style="width:8px;height:8px;background:${c}"></span>${l}</span>`).join("");
 }
@@ -696,9 +731,10 @@ function computeDogIndex(){
   const L=levelOf(score), lvl=L.lvl;
 
   const g=$("dogGauge"); g.className="gauge lvl-"+lvl;
-  $("dogEmoji").textContent=L.emoji;
-  $("dogTitle").innerHTML=`${L.title}<small>${L.subtitle}</small>`;
-  $("dogNum").innerHTML=`${score}<small>/ 100</small>`;
+  const ring=$("dogRing"); ring.style.setProperty('--p',score); ring.style.setProperty('--c',L.color);
+  $("dogNum").textContent=score;
+  $("dogTitle").innerHTML=`${L.emoji} ${L.title}`;
+  $("dogTitleSub").textContent=L.subtitle;
   [...$("stages").children].forEach((el,i)=>el.classList.toggle("active",i===L.stageN-1));
 
   // rest-of-day outlook: best time to walk + hourly walkability
