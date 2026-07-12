@@ -565,9 +565,9 @@ function todayDailyIndex(){const d=STATE.data.daily,t=STATE.data.current.time.sl
 
 /* ============================ HOURLY (trailing 12h + wind) ============================ */
 function renderHourly(){
-  const h=STATE.data.hourly,ni=nowIndex(),start=Math.max(0,ni-11);
+  const h=STATE.data.hourly,ni=nowIndex(),end=Math.min(h.time.length-1,ni+11);
   let cells="";
-  for(let i=start;i<=ni;i++){
+  for(let i=ni;i<=end;i++){
     const dt=new Date(h.time[i]);
     const hr=dt.toLocaleTimeString([],{hour:'numeric'});
     const pop=h.precipitation_probability?.[i];
@@ -581,7 +581,7 @@ function renderHourly(){
     </div>`;
   }
   $("hourlyArea").innerHTML=`<div class="card">
-    <h2>🕐 Hourly · last 12 hours</h2>
+    <h2>🕐 Hourly · next 12 hours</h2>
     <div class="hint">Temperature, rain chance and wind (arrow = direction). Current hour highlighted.</div>
     <div class="hscroll">${cells}</div></div>`;
 }
