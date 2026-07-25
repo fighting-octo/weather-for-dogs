@@ -32,7 +32,7 @@
   .wrap{max-width:1040px;margin:0 auto}
 
   /* header + mascot */
-  header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:14px;
+  header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
     margin:0 -14px 18px;padding:10px 14px;
     background:linear-gradient(180deg,rgba(30,18,24,.97) 0%,rgba(30,18,24,.82) 100%);
     backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15);
@@ -45,7 +45,19 @@
   .paw{position:absolute;fill:var(--accent2);filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
   .htext,.units,.corgi{position:relative;z-index:1}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
-  .htext{flex:1;min-width:0}
+  .htext{flex:1 1 180px;min-width:0}
+  /* location search living in the header, upper-right */
+  .header-loc{flex:0 0 auto;width:clamp(180px,28vw,240px);display:flex;flex-direction:column;gap:6px;z-index:1;position:relative}
+  .header-loc .searchbar{margin:0;padding:6px;gap:6px;border-radius:11px}
+  .header-loc input#loc{padding:8px 10px;min-width:0}
+  .header-loc button.act{padding:8px 12px;font-size:13px}
+  .header-loc button.ghost{padding:8px 10px}
+  .header-loc .picker{margin-top:0}
+  .header-loc .loading,.header-loc .err{font-size:11px;padding:2px 2px 0}
+  @media(max-width:560px){
+    .corgi{order:0}.htext{order:1;flex:1 1 auto}.units{order:2}
+    .header-loc{order:3;flex:1 1 100%;width:auto}
+  }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
   .dogname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
     color:#7be6a0;font-size:clamp(28px,8vw,42px);line-height:.9;font-weight:400;
@@ -126,11 +138,14 @@
   }
 
   /* dog card */
-  .entrygrid{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}
-  .entry-loc{flex:1 1 320px;min-width:0;display:flex;flex-direction:column}
   .entry-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
   .entry-label.loc{color:var(--accent)}
-  .doginputs{flex:1 1 300px;display:flex;flex-wrap:wrap;gap:12px;
+  /* compact in-between controls card */
+  .card.controls{padding:clamp(10px,2.8vw,14px)}
+  .loc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .loc-row .entry-label{margin-bottom:0;flex:0 0 auto;white-space:nowrap}
+  .loc-row .searchbar{flex:1 1 220px;margin:0;padding:8px}
+  .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;
     background:linear-gradient(180deg,rgba(124,240,196,.11),rgba(124,240,196,.03));
     border:1px solid rgba(124,240,196,.34);border-radius:13px;padding:13px}
   .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px}
@@ -282,43 +297,22 @@
       <h1>Weather for Dogs <span class="dogname" id="dogTitleName"></span></h1>
       <div class="sub">Local forecast + a smart dog‑walking safety index</div>
     </div>
+    <div class="header-loc">
+      <div class="searchbar">
+        <input type="text" id="loc" placeholder="Location…" autocomplete="off">
+        <button class="act" id="searchBtn">Go</button>
+        <button class="ghost" id="geoBtn" title="Use my location">📌</button>
+      </div>
+      <select class="picker" id="picker"></select>
+      <div id="locStatus" class="loading" style="display:none"></div>
+    </div>
     <div class="units" id="units">
       <button data-u="imperial" class="on">°F</button>
       <button data-u="metric">°C</button>
     </div>
   </header>
 
-  <!-- ENTRY: location + dog, one combined area -->
-  <div class="card">
-    <h2>📍 Set up your walk</h2>
-    <div class="hint">Enter your location, plus your dog's name &amp; breed — we'll remember them.</div>
-    <div class="entrygrid">
-      <div class="entry-loc">
-        <label class="entry-label loc">📍 Location</label>
-        <div class="searchbar">
-          <input type="text" id="loc" placeholder="e.g. Palo Alto" autocomplete="off">
-          <button class="act" id="searchBtn">Search</button>
-          <button class="ghost" id="geoBtn" title="Use my location">📌</button>
-        </div>
-        <select class="picker" id="picker"></select>
-        <div id="locStatus" class="loading" style="display:none"></div>
-      </div>
-      <div class="doginputs">
-        <div class="fld">
-          <label for="dogName">🐶 Your dog's name</label>
-          <input type="text" id="dogName" placeholder="e.g. Biscuit">
-        </div>
-        <div class="fld">
-          <label for="breed">🦴 Breed</label>
-          <select id="breed"></select>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="currentArea"></div>
-
-  <!-- DOG WALK GUIDE (directly under city + temperature) -->
+  <!-- DOG WALK & PLAY INDEX — the prominent catch, right under the header -->
   <div class="card hero" id="dogCard">
     <h2>🐾 Doggie Walk &amp; Play Index</h2>
     <div class="hint">When is the best time to walk or play outside today — and for how long? We weigh temperature, wind, air quality and fatigue for your dog's breed, hour by hour.</div>
@@ -355,12 +349,7 @@
     <div class="note">Guidance only — always use your own judgment. Flat‑faced (brachycephalic) and senior dogs need extra caution in heat.</div>
   </div>
 
-  <div id="hourlyArea"></div>
-
-  <!-- 5-DAY -->
-  <div id="dailyArea"></div>
-
-  <!-- POLLEN -->
+  <!-- POLLEN & ALLERGY — directly below the "right now" section -->
   <div class="card" id="pollenCard">
     <h2>🌾 Pollen &amp; Allergy Index</h2>
     <div class="hint">General airborne allergen levels for the selected area.</div>
@@ -368,6 +357,25 @@
     <div class="pollen" id="pollenGrid"></div>
     <div class="note" id="pollenNote"></div>
   </div>
+
+  <!-- dog name & breed (below) -->
+  <div class="doginputs">
+    <div class="fld">
+      <label for="dogName">🐶 Your dog's name</label>
+      <input type="text" id="dogName" placeholder="e.g. Biscuit">
+    </div>
+    <div class="fld">
+      <label for="breed">🦴 Breed</label>
+      <select id="breed"></select>
+    </div>
+  </div>
+
+  <div id="currentArea"></div>
+
+  <div id="hourlyArea"></div>
+
+  <!-- 5-DAY -->
+  <div id="dailyArea"></div>
 
   <div class="foot">Data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> · Not veterinary or medical advice.</div>
 </div>
