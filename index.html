@@ -72,9 +72,14 @@
 
   .card{background:linear-gradient(180deg,var(--panel) 0%,#20141c 100%);border:1px solid var(--line);
     border-radius:var(--radius);padding:clamp(14px,4vw,20px);box-shadow:var(--shadow);margin-bottom:16px}
-  .card h2{margin:0 0 4px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:8px;
-    text-transform:uppercase;letter-spacing:.6px}
-  .card .hint{color:var(--muted);font-size:12px;margin-bottom:14px}
+  /* ── TYPE HIERARCHY ───────────────────────────────────────────
+     Tier 1  card title  → .card h2  (uppercase 14, bold; hero=green)
+     Tier 2  sub-header   → .subhead / .nowlbl / .tlhead / .pg-title / .petdetails-hd
+     Tier 3  field label  → .entry-label / .doginputs label
+     Body    → .hint / .note (muted)                                 */
+  .card h2{margin:0 0 5px;font-size:14px;font-weight:800;display:flex;align-items:center;gap:8px;
+    text-transform:uppercase;letter-spacing:.7px;color:var(--text)}
+  .card .hint{color:var(--muted);font-size:12px;line-height:1.5;margin-bottom:14px}
 
   /* search */
   .searchbar{display:flex;flex-wrap:wrap;gap:8px;
@@ -145,7 +150,8 @@
   .loc-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   .loc-row .entry-label{margin-bottom:0;flex:0 0 auto;white-space:nowrap}
   .loc-row .searchbar{flex:1 1 220px;margin:0;padding:8px}
-  .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 16px;
+  .card h2.pet-title{color:var(--accent2)}
+  .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin:0;
     background:linear-gradient(180deg,rgba(124,240,196,.11),rgba(124,240,196,.03));
     border:1px solid rgba(124,240,196,.34);border-radius:13px;padding:13px}
   .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px}
@@ -204,7 +210,7 @@
   .rec .em{font-size:19px;line-height:1.3;flex:0 0 auto}
   /* hero dog card */
   .card.hero{border-color:rgba(124,240,196,.5);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 1px rgba(124,240,196,.15)}
-  .card.hero>h2{font-size:17px;color:var(--accent2)}
+  .card.hero>h2{color:var(--accent2)}
   /* best-time headline banner */
   .besttime{display:flex;gap:14px;align-items:center;border-radius:14px;padding:15px 17px;margin-bottom:14px;
     background:linear-gradient(100deg,rgba(124,240,196,.16),rgba(94,157,255,.08));border:1px solid rgba(124,240,196,.4)}
@@ -219,7 +225,7 @@
   .besttime .bt-sub b{color:var(--text)}
   /* walkability timeline */
   .tlwrap{margin-bottom:6px}
-  .tlhead{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  .tlhead{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px;
     display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:9px}
   .tllegend{display:flex;flex-wrap:wrap;gap:4px 10px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
   .tllegend span{display:inline-flex;align-items:center;gap:4px;font-size:11px}
@@ -232,13 +238,13 @@
   .tl-bar i{display:block;width:100%;border-radius:6px}
   .tl-em{font-size:clamp(11px,2.7vw,13px);line-height:1}
   .tl-temp{font-size:clamp(10px,2.5vw,12px);font-weight:700}
-  .nowlbl{font-size:11.5px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;
+  .nowlbl{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;
     display:flex;align-items:center;gap:8px}
   .nowlbl::after{content:"";flex:1;height:1px;background:var(--line)}
   .note{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
   /* researched pavement paw-safety reference */
   .pave-guide{margin-top:16px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
-  .pg-title{font-size:12.5px;font-weight:800;margin-bottom:9px}
+  .pg-title{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
   .pg-bands{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .pg-band{display:flex;flex-direction:column;gap:2px;font-size:10.5px;color:var(--muted);
     border-radius:9px;padding:8px 9px;border:1px solid var(--line);line-height:1.25}
@@ -380,8 +386,10 @@
     <div class="note" id="pollenNote"></div>
   </div>
 
-  <!-- dog name & breed (below) -->
-  <div class="doginputs">
+  <!-- pet details: name, breed, age & build -->
+  <div class="card">
+    <h2 class="pet-title">🐾 Enter your pet's details for tailored recommendations</h2>
+    <div class="doginputs">
     <div class="fld">
       <label for="dogName">🐶 Your dog's name</label>
       <input type="text" id="dogName" placeholder="e.g. Biscuit">
@@ -389,6 +397,23 @@
     <div class="fld">
       <label for="breed">🦴 Breed</label>
       <select id="breed"></select>
+    </div>
+    <div class="fld">
+      <label for="dogAge">🎂 Age</label>
+      <select id="dogAge">
+        <option value="adult">Adult</option>
+        <option value="puppy">Puppy</option>
+        <option value="senior">Senior</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label for="dogBuild">⚖️ Build</label>
+      <select id="dogBuild">
+        <option value="average">Average</option>
+        <option value="lean">Lean</option>
+        <option value="overweight">Overweight</option>
+      </select>
+    </div>
     </div>
   </div>
 
@@ -642,9 +667,12 @@ function renderDaily(){
 }
 
 /* ============================ DOG WALK INDEX ============================ */
+/* age + body-condition modifiers from the UI (both worsen thermoregulation) */
+function dogMods(){return {age:($("dogAge")&&$("dogAge").value)||"adult", build:($("dogBuild")&&$("dogBuild").value)||"average"};}
+
 /* core scorer shared by "now" and every forecast hour. All inputs in °F / mph. */
 function scoreCore(x,b){
-  const feels=x.feels,temp=x.temp??x.feels,hum=x.hum,wind=x.wind,gust=x.gust??wind*1.4,aqi=x.aqi,uv=x.uv??4,pop=x.pop??0;
+  const feels=x.feels,temp=x.temp??x.feels,hum=x.hum,wind=x.wind,gust=x.gust??wind*1.4,aqi=x.aqi,uv=x.uv??4,pop=x.pop??0,age=x.age||"adult",build=x.build||"average";
   /* HEAT — bands from canine heat-illness guidance, read on feels-like °F (a heat-index / wet-bulb
      proxy, since dogs cool by panting and humid air defeats evaporative cooling). Average dog:
      <68 safe · 68-77 fine (caution for sensitive) · 77-85 risk climbs steeply · 85-90 potty only · >90 none.
@@ -653,10 +681,14 @@ function scoreCore(x,b){
   if(b.brachy){heatStart=68;heatSlope=5.0;}
   else{heatStart=75+(b.heat-3)*4;heatSlope=4.0;}
   if(b.coat>=3)heatStart-=3; if(b.size>=5)heatStart-=3;   // heavy double coat / giant breeds
+  if(age==="senior"){heatStart-=4;heatSlope+=0.5;} else if(age==="puppy")heatStart-=3;   // poorer thermoregulation
+  if(build==="overweight"){heatStart-=5;heatSlope+=0.7;} else if(build==="lean")heatStart+=1;  // extra weight overheats faster
   let heatPen=0; if(feels>heatStart)heatPen=Math.min(65,(feels-heatStart)*heatSlope);
   if(feels>heatStart-4&&hum>60)heatPen=Math.min(72,heatPen+(hum-60)*0.4);   // humidity defeats panting
   /* COLD */
   let coldThresh=34-(b.cold-3)*6; if(b.size<=1)coldThresh+=8; if(b.coat<=1)coldThresh+=6;
+  if(age==="senior")coldThresh+=4; else if(age==="puppy")coldThresh+=3;   // young/old chill sooner
+  if(build==="overweight")coldThresh-=2;
   let coldPen=0; if(feels<coldThresh)coldPen=Math.min(60,(coldThresh-feels)*2.6);
   /* WIND */
   let windPen=0; if(gust>25)windPen=Math.min(35,(gust-25)*1.4); else if(wind>18)windPen=(wind-18)*1.2;
@@ -665,7 +697,10 @@ function scoreCore(x,b){
   let airPen=0; if(aqi!=null&&aqi>50)airPen=Math.min(45,(aqi-50)*0.5);
   /* FATIGUE / exertion load */
   let fatigue=Math.max(0,feels-70)*0.9+Math.max(0,hum-55)*0.35+Math.max(0,uv-6)*3;
-  if(b.brachy)fatigue*=1.4; if(b.heat<=2)fatigue*=1.2; fatigue=Math.min(50,fatigue);
+  if(b.brachy)fatigue*=1.4; if(b.heat<=2)fatigue*=1.2;
+  if(age==="senior")fatigue*=1.25; else if(age==="puppy")fatigue*=1.2;
+  if(build==="overweight")fatigue*=1.3;
+  fatigue=Math.min(50,fatigue);
   const precipPen=pop>40?Math.min(22,(pop-40)*0.4):0;
   /* PAVEMENT — asphalt in direct sun runs ~40-60°F above air (UV as a sun proxy); hot pavement burns paw pads */
   const paveRise=Math.max(0,Math.min(60,uv*6));
@@ -703,12 +738,13 @@ const tlShort=dt=>{let h=dt.getHours();const ap=h<12?'a':'p';h=h%12;if(h===0)h=1
 function buildOutlook(b){
   const h=STATE.data.hourly, ni=nowIndex(), todayStr=STATE.data.current.time.slice(0,10);
   const endIdx=Math.min(h.time.length-1, ni+11);   // always 12 cells: now + next 11
+  const mods=dogMods();
   const hours=[];
   for(let i=ni;i<=endIdx;i++){
     const iso=h.time[i], dt=new Date(iso);
     const ctx={feels:toF(h.apparent_temperature[i]), temp:toF(h.temperature_2m[i]), hum:h.relative_humidity_2m[i],
       wind:toMph(h.wind_speed_10m[i]), gust:toMph(h.wind_gusts_10m?.[i]??h.wind_speed_10m[i]*1.4),
-      aqi:aqiAt(iso), uv:h.uv_index?.[i]??4, pop:h.precipitation_probability?.[i]??0};
+      aqi:aqiAt(iso), uv:h.uv_index?.[i]??4, pop:h.precipitation_probability?.[i]??0, age:mods.age, build:mods.build};
     const s=scoreCore(ctx,b).score;
     hours.push({i,iso,dt,isToday:iso.slice(0,10)===todayStr,score:s,
       tempDisp:round(h.temperature_2m[i]),feelsDisp:round(h.apparent_temperature[i]),lvl:levelOf(s)});
@@ -760,11 +796,12 @@ function computeDogIndex(){
   if(!STATE.data) return;
   const c=STATE.data.current;
   const b=BREEDS[$("breed").value]||BREEDS["Generic / Mixed"];
+  const mods=dogMods();
   const rawName=$("dogName").value.trim(), name=rawName||"your dog";
 
   $("dogTitleName").textContent=rawName;
   $("greet").style.display=rawName?"block":"none";
-  if(rawName) $("greet").innerHTML=`Walk check for <span>${rawName}</span> — ${$("breed").value}`;
+  if(rawName){const cap=s=>s[0].toUpperCase()+s.slice(1);const bits=[$("breed").value];if(mods.age!=="adult")bits.push(cap(mods.age));if(mods.build!=="average")bits.push(cap(mods.build));$("greet").innerHTML=`Walk check for <span>${rawName}</span> — ${bits.join(" · ")}`;}
 
   const feels=toF(c.apparent_temperature), tempF=toF(c.temperature_2m), hum=c.relative_humidity_2m;
   const wind=toMph(c.wind_speed_10m), gust=toMph(c.wind_gusts_10m);
@@ -773,7 +810,7 @@ function computeDogIndex(){
   const dispFeels=round(c.apparent_temperature), dispWind=round(c.wind_speed_10m), dispGust=round(c.wind_gusts_10m);
 
   const pop=STATE.data.hourly.precipitation_probability?.[nowIndex()]??0;
-  const core=scoreCore({feels,temp:tempF,hum,wind,gust,aqi,uv,pop},b);
+  const core=scoreCore({feels,temp:tempF,hum,wind,gust,aqi,uv,pop,age:mods.age,build:mods.build},b);
   const {heatPen,coldPen,windPen,airPen,fatigue,pavePen}=core, score=core.score;
   // pavement paw-safety bands (researched): ~105°F warm · 115°F hot · 125°F+ burns pads in ~60s
   const dispPave=fToDisp(core.pavement), paveHot=core.pavement>=125, paveWarn=core.pavement>=115, paveNote=core.pavement>=105;
@@ -830,6 +867,11 @@ function computeDogIndex(){
   if(paveHot) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — at 125°+ paw pads can burn in about 60 seconds. Stick to grass/shade or wait for cooler hours (7‑second back‑of‑hand test).`]);
   else if(paveWarn) recs.push(["","🔥",`Pavement is hot (≈ <b>${dispPave}°</b>) — nearing the ~125° burn point. Keep to grass/shade and do the 7‑second hand test before walking on it.`]);
   else if(paveNote) recs.push(["","🔥",`Pavement is warm (≈ <b>${dispPave}°</b>) — below the ~125° burn point, but paw pads still feel it, so favor grass and shade.`]);
+  if(mildHeat||heavyHeat||paveWarn){
+    if(mods.age==="senior") recs.push(["","🎂",`Senior dogs regulate heat poorly — keep it gentle, shaded and short, and watch closely for tiring.`]);
+    else if(mods.age==="puppy") recs.push(["","🐾",`Puppies can't regulate temperature well yet — keep outings short and out of the midday sun.`]);
+    if(mods.build==="overweight") recs.push(["","⚖️",`Extra weight makes ${name} overheat faster — go slower and shorter, and bring water.`]);
+  }
   if(heavyCold){
     recs.push(["","🧥",`Too cold for ${name}. Put on a <b>warm insulated coat/sweater</b> and consider <b>paw booties</b> or paw balm.`]);
     recs.push(["","⏱️",`Keep the outing short; watch for shivering or lifting paws.`]);
@@ -923,14 +965,18 @@ $("units").addEventListener("click",e=>{
 
 (function initBreeds(){$("breed").innerHTML=Object.keys(BREEDS).map(b=>`<option>${b}</option>`).join("");})();
 
-const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units";
+const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units",AGE_KEY="wfd_age",BUILD_KEY="wfd_build";
 (function restore(){
   const n=localStorage.getItem(NAME_KEY); if(n){$("dogName").value=n;$("dogTitleName").textContent=n.trim();}
   const b=localStorage.getItem(BREED_KEY); if(b&&BREEDS[b])$("breed").value=b;
+  const ag=localStorage.getItem(AGE_KEY); if(ag)$("dogAge").value=ag;
+  const bd=localStorage.getItem(BUILD_KEY); if(bd)$("dogBuild").value=bd;
   const u=localStorage.getItem(UNIT_KEY); if(u){STATE.units=u;[...$("units").children].forEach(x=>x.classList.toggle("on",x.dataset.u===u));}
 })();
 $("dogName").addEventListener("input",e=>{localStorage.setItem(NAME_KEY,e.target.value);$("dogTitleName").textContent=e.target.value.trim();if(STATE.data)computeDogIndex();});
 $("breed").addEventListener("change",e=>{localStorage.setItem(BREED_KEY,e.target.value);if(STATE.data)computeDogIndex();});
+$("dogAge").addEventListener("change",e=>{localStorage.setItem(AGE_KEY,e.target.value);if(STATE.data)computeDogIndex();});
+$("dogBuild").addEventListener("change",e=>{localStorage.setItem(BUILD_KEY,e.target.value);if(STATE.data)computeDogIndex();});
 
 /* default: Palo Alto, California */
 (function boot(){
