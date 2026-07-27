@@ -28,8 +28,14 @@
     background-attachment:fixed;
     color:var(--text); min-height:100vh;
     padding:18px 14px calc(46px + env(safe-area-inset-bottom));
+    overflow-x:clip;   /* never let the page scroll sideways on mobile */
   }
   .wrap{max-width:1040px;margin:0 auto}
+  img,svg,select,input,canvas{max-width:100%}   /* nothing overflows its container */
+  /* let flex/grid children with text shrink & wrap instead of forcing the page wide */
+  .bt-txt,.cur-left>div,.rec>span,.allergysum>span,.tt-wrap,.factor .fl>span{min-width:0}
+  .factor,.pcell,.day,.pill,.stage,.pg-band,.tl-cell,.hour{min-width:0}
+  .bt-main,.bt-sub,.rec span,.verdict,.tt-title,.tt-sub,.place,.pg-foot{overflow-wrap:anywhere}
 
   /* header + mascot */
   header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
@@ -55,7 +61,11 @@
   .header-loc .picker{margin-top:0}
   .header-loc .loading,.header-loc .err{font-size:11px;padding:2px 2px 0}
   @media(max-width:560px){
-    .corgi{order:0}.htext{order:1;flex:1 1 auto}.units{order:2}
+    header.top{gap:10px;padding:9px 12px}
+    .corgi{order:0;width:54px}
+    .htext{order:1;flex:1 1 auto;min-width:0}
+    .sub{display:none}                 /* free vertical space in the frozen header */
+    .units{order:2}
     .header-loc{order:3;flex:1 1 100%;width:auto}
   }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
@@ -267,6 +277,23 @@
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
   a{color:var(--accent)}
   .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+  /* ── extra small-screen polish ── */
+  @media(max-width:560px){
+    .dogname{font-size:26px}
+    .stage{font-size:9.5px;padding:6px 2px}
+    .stage .se{font-size:14px}
+    .header-loc button.act,.header-loc button.ghost{padding:10px 12px}
+    .gscore .ring{width:60px;height:60px}
+    .gscore .ring-in{width:47px;height:47px}
+    .gscore .ring-in span{font-size:19px}
+  }
+  @media(max-width:420px){
+    .timeline{gap:3px}
+    .tl-cell{padding:7px 1px 6px;border-radius:8px}
+    .tl-bar{height:34px}
+    .tl-time{font-size:9px}
+    .factors{grid-template-columns:1fr 1fr}
+  }
 </style>
 </head>
 <body>
