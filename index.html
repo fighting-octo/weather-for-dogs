@@ -455,6 +455,37 @@
     <div class="note">Guidance only — always use your own judgment. Heat bands follow canine heat‑illness research; flat‑faced (brachycephalic), senior, overweight and heavy‑coated dogs need extra caution.</div>
   </div>
 
+  <!-- pet details: name, breed, age & build -->
+  <div class="card">
+    <h2 class="pet-title">🐾 Enter your pet's details for tailored recommendations</h2>
+    <div class="doginputs">
+    <div class="fld">
+      <label for="dogName">🐶 Your dog's name</label>
+      <input type="text" id="dogName" placeholder="e.g. Biscuit">
+    </div>
+    <div class="fld">
+      <label for="breed">🦴 Breed</label>
+      <select id="breed"></select>
+    </div>
+    <div class="fld">
+      <label for="dogAge">🎂 Age</label>
+      <select id="dogAge">
+        <option value="adult">Adult</option>
+        <option value="puppy">Puppy</option>
+        <option value="senior">Senior</option>
+      </select>
+    </div>
+    <div class="fld">
+      <label for="dogBuild">⚖️ Build</label>
+      <select id="dogBuild">
+        <option value="average">Average</option>
+        <option value="lean">Lean</option>
+        <option value="overweight">Overweight</option>
+      </select>
+    </div>
+    </div>
+  </div>
+
   <!-- POLLEN & ALLERGY — directly below the "right now" section -->
   <div class="card" id="pollenCard">
     <h2>🌾 Pollen &amp; Allergy Index</h2>
@@ -493,37 +524,6 @@
       <div class="poi-list" id="poiList"></div>
       <div class="map-note">Routes &amp; places from OpenStreetMap · walking estimates only — always use your judgment near roads and check park rules.</div>
       <button class="unlock-link" id="relockBtn" style="margin-top:10px">Lock again</button>
-    </div>
-  </div>
-
-  <!-- pet details: name, breed, age & build -->
-  <div class="card">
-    <h2 class="pet-title">🐾 Enter your pet's details for tailored recommendations</h2>
-    <div class="doginputs">
-    <div class="fld">
-      <label for="dogName">🐶 Your dog's name</label>
-      <input type="text" id="dogName" placeholder="e.g. Biscuit">
-    </div>
-    <div class="fld">
-      <label for="breed">🦴 Breed</label>
-      <select id="breed"></select>
-    </div>
-    <div class="fld">
-      <label for="dogAge">🎂 Age</label>
-      <select id="dogAge">
-        <option value="adult">Adult</option>
-        <option value="puppy">Puppy</option>
-        <option value="senior">Senior</option>
-      </select>
-    </div>
-    <div class="fld">
-      <label for="dogBuild">⚖️ Build</label>
-      <select id="dogBuild">
-        <option value="average">Average</option>
-        <option value="lean">Lean</option>
-        <option value="overweight">Overweight</option>
-      </select>
-    </div>
     </div>
   </div>
 
