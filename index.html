@@ -168,7 +168,10 @@
   .doginputs{display:flex;flex-wrap:wrap;gap:12px;margin:0;
     background:linear-gradient(180deg,rgba(124,240,196,.11),rgba(124,240,196,.03));
     border:1px solid rgba(124,240,196,.34);border-radius:13px;padding:13px}
-  .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px}
+  .doginputs .fld{display:flex;flex-direction:column;gap:6px;flex:1 1 160px;min-width:0}
+  /* breed has the longest option text — give it a wider basis so it takes its own
+     row on narrow screens instead of being squeezed into an unreadable stub */
+  .doginputs .fld.wide{flex:1 1 240px}
   .doginputs label{font-size:11px;color:var(--accent2);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   .doginputs input,.doginputs select{width:100%}
   .greet{font-size:14px;font-weight:700;margin:-4px 0 14px;color:var(--text)}
@@ -463,7 +466,7 @@
       <label for="dogName">🐶 Your dog's name</label>
       <input type="text" id="dogName" placeholder="e.g. Biscuit">
     </div>
-    <div class="fld">
+    <div class="fld wide">
       <label for="breed">🦴 Breed</label>
       <select id="breed"></select>
     </div>
