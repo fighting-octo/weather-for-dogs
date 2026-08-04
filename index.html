@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0f1724">
-<title>Weather for Dogs 🐾</title>
+<title>doggyweather 🐾</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
@@ -73,6 +73,12 @@
     .header-loc{order:3;flex:1 1 100%;width:auto}
   }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;display:flex;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
+  /* brand: "doggyweather" in the script face, white — "for" stays in the h1 face */
+  .brandname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
+    color:#fff;font-size:clamp(26px,7vw,38px);line-height:.9;font-weight:400;
+    text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .forword{font-weight:800}
+  .forword.hide{display:none}
   .dogname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
     color:#7be6a0;font-size:clamp(28px,8vw,42px);line-height:.9;font-weight:400;
     text-shadow:0 2px 10px rgba(74,222,128,.35);white-space:nowrap}
@@ -330,6 +336,11 @@
   .poi-item .poi-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .poi-item .poi-dist{color:var(--muted);font-size:12px;flex:0 0 auto;white-space:nowrap}
   .map-note{font-size:11px;color:var(--muted);margin-top:11px;line-height:1.45}
+  /* attribution required by the ODbL (OpenStreetMap) and the FOSSGIS usage policy */
+  .map-attrib{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;
+    border-top:1px solid var(--line);padding-top:8px;overflow-wrap:anywhere}
+  .map-attrib a{color:var(--muted);text-decoration:underline}
+  .map-attrib b{color:var(--text);font-weight:700}
   .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
   /* ── extra small-screen polish ── */
   @media(max-width:560px){
@@ -394,7 +405,7 @@
       <path d="M93,109 Q100,122 107,109 Q103.5,116 100,116 Q96.5,116 93,109 Z" fill="#f2879a"/>
     </svg>
     <div class="htext">
-      <h1>Weather for Dogs <span class="dogname" id="dogTitleName"></span></h1>
+      <h1><span class="brandname">doggyweather</span><span class="forword hide" id="forWord">for</span><span class="dogname" id="dogTitleName"></span></h1>
       <div class="sub">Local forecast + a smart dog‑walking safety index</div>
     </div>
     <div class="header-loc">
@@ -525,7 +536,18 @@
       <div class="map-legend" id="mapLegend"></div>
       <div class="route-info" id="routeInfo"></div>
       <div class="poi-list" id="poiList"></div>
-      <div class="map-note">Routes &amp; places from OpenStreetMap · walking estimates only — always use your judgment near roads and check park rules.</div>
+      <div class="map-note">Walking estimates only — always use your judgment near roads and check park rules.</div>
+      <div class="map-attrib">
+        <b>Sources &amp; credits.</b>
+        Map data and places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors,
+        available under the <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">Open Database License (ODbL)</a>;
+        map tiles © OpenStreetMap contributors. Dog parks and green spaces queried via the
+        <a href="https://overpass-api.de/" target="_blank" rel="noopener">Overpass API</a>.
+        Walking routes by <a href="https://project-osrm.org/" target="_blank" rel="noopener">OSRM</a> and reachable‑area rings by
+        <a href="https://valhalla.github.io/valhalla/" target="_blank" rel="noopener">Valhalla</a>, both on public demo servers operated by
+        <a href="https://www.fossgis.de/" target="_blank" rel="noopener">FOSSGIS e.V.</a>
+        Map display by <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a> (BSD‑2‑Clause).
+      </div>
       <button class="unlock-link" id="relockBtn" style="margin-top:10px">Lock again</button>
     </div>
   </div>
@@ -537,7 +559,7 @@
   <!-- 5-DAY -->
   <div id="dailyArea"></div>
 
-  <div class="foot">Data: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> · Not veterinary or medical advice.</div>
+  <div class="foot">Weather data by <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) · Maps &amp; places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL) · Not veterinary or medical advice.</div>
 </div>
 
 <script>
@@ -914,7 +936,7 @@ function computeDogIndex(){
   const mods=dogMods();
   const rawName=$("dogName").value.trim(), name=rawName||"your dog";
 
-  $("dogTitleName").textContent=rawName;
+  setDogTitle(rawName);
   $("greet").style.display=rawName?"block":"none";
   if(rawName){const cap=s=>s[0].toUpperCase()+s.slice(1);const bits=[$("breed").value];if(mods.age!=="adult")bits.push(cap(mods.age));if(mods.build!=="average")bits.push(cap(mods.build));$("greet").innerHTML=`Walk check for <span>${rawName}</span> — ${bits.join(" · ")}`;}
 
@@ -1137,7 +1159,8 @@ async function updateMap(){
   if(typeof L==="undefined"){ el.innerHTML='<div class="map-fallback">🗺️ The map needs an internet connection to load.</div>'; return; }
   if(!MAP){
     MAP=L.map(el,{scrollWheelZoom:false});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(MAP);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,
+      attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'}).addTo(MAP);
     MAP_LAYER=L.layerGroup().addTo(MAP);
   }
   const my=++guideToken;
@@ -1258,9 +1281,16 @@ $("units").addEventListener("click",e=>{
 
 (function initBreeds(){$("breed").innerHTML=Object.keys(BREEDS).map(b=>`<option>${b}</option>`).join("");})();
 
+/* headline reads "doggyweather for <name>" — the "for" only appears once there is a name */
+function setDogTitle(n){
+  const name=(n||"").trim();
+  $("dogTitleName").textContent=name;
+  $("forWord").classList.toggle("hide",!name);
+}
+
 const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units",AGE_KEY="wfd_age",BUILD_KEY="wfd_build";
 (function restore(){
-  const n=localStorage.getItem(NAME_KEY); if(n){$("dogName").value=n;$("dogTitleName").textContent=n.trim();}
+  const n=localStorage.getItem(NAME_KEY); if(n){$("dogName").value=n;setDogTitle(n);}
   const b=localStorage.getItem(BREED_KEY); if(b&&BREEDS[b])$("breed").value=b;
   const ag=localStorage.getItem(AGE_KEY); if(ag)$("dogAge").value=ag;
   const bd=localStorage.getItem(BUILD_KEY); if(bd)$("dogBuild").value=bd;
@@ -1268,7 +1298,7 @@ const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units",AGE_KEY=
   const wm=localStorage.getItem("wfd_walkmin"); if(wm){STATE.walkMinutes=+wm; if($("walkMin")){$("walkMin").value=wm; $("walkMinLbl").textContent=wm;}}
   reflectPremium();
 })();
-$("dogName").addEventListener("input",e=>{localStorage.setItem(NAME_KEY,e.target.value);$("dogTitleName").textContent=e.target.value.trim();if(STATE.data)computeDogIndex();});
+$("dogName").addEventListener("input",e=>{localStorage.setItem(NAME_KEY,e.target.value);setDogTitle(e.target.value);if(STATE.data)computeDogIndex();});
 $("breed").addEventListener("change",e=>{localStorage.setItem(BREED_KEY,e.target.value);if(STATE.data)computeDogIndex();});
 $("dogAge").addEventListener("change",e=>{localStorage.setItem(AGE_KEY,e.target.value);if(STATE.data)computeDogIndex();});
 $("dogBuild").addEventListener("change",e=>{localStorage.setItem(BUILD_KEY,e.target.value);if(STATE.data)computeDogIndex();});
