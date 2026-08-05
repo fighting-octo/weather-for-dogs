@@ -57,6 +57,9 @@
      inside the header gradient instead of punching through it */
   .paw.w{fill:#fff;mix-blend-mode:soft-light;filter:none}
   .htext,.units,.corgi{position:relative;z-index:1}
+  /* transparent on desktop — the mascot and title stay direct header children.
+     On mobile it becomes a real row so the pair can be centred as one unit. */
+  .hbrand{display:contents}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
   .htext{flex:1 1 180px;min-width:0}
   /* location search living in the header, upper-right */
@@ -67,14 +70,18 @@
   .header-loc button.ghost{padding:8px 10px}
   .header-loc .picker{margin-top:0}
   .header-loc .loading,.header-loc .err{font-size:11px;padding:2px 2px 0}
+  /* Mobile header = two centred rows: [dog + headline] then [units + search].
+     Keeping it to two rows matters because the header is sticky. */
   @media(max-width:560px){
-    header.top{gap:10px;padding:9px 12px}
-    .corgi{order:0;width:54px}
-    .htext{order:1;flex:1 1 auto;min-width:0}
+    header.top{gap:8px 10px;padding:8px 12px;justify-content:center}
+    .hbrand{display:flex;order:0;flex:1 1 100%;min-width:0;
+      align-items:center;justify-content:center;gap:10px;position:relative;z-index:1}
+    .corgi{width:44px}
+    .htext{flex:0 1 auto;min-width:0;text-align:center}
     .sub{display:none}                 /* free vertical space in the frozen header */
     .pawtrail{opacity:.55}             /* same prints, less busy in the short header */
     .units{order:2}
-    .header-loc{order:3;flex:1 1 100%;width:auto}
+    .header-loc{order:3;flex:1 1 150px;width:auto}
   }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;
     display:flex;align-items:baseline;flex-wrap:wrap;gap:2px clamp(12px,2.4vw,20px)}
@@ -92,9 +99,16 @@
   /* SVG weather icons scale with parent font-size */
   .wxi{width:1em;height:1em;display:inline-block;vertical-align:middle}
   .sub{color:var(--muted);font-size:clamp(11px,3vw,13px);margin-top:10px}
-  .units{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;overflow:hidden;flex:0 0 auto}
-  .units button{background:transparent;color:var(--muted);border:none;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
+  .units{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;flex:0 0 auto}
+  .units button{position:relative;background:transparent;color:var(--muted);border:none;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
+  .units button:first-child{border-radius:9px 0 0 9px}
+  .units button:last-child{border-radius:0 9px 9px 0}
   .units button.on{background:var(--accent);color:#04122b}
+  /* the pill stays visually compact (the header is sticky) but each half gets a
+     44px touch area, extended outwards only so the two never overlap */
+  .units button::after{content:"";position:absolute;top:50%;transform:translateY(-50%);height:44px}
+  .units button:first-child::after{left:-9px;right:0}
+  .units button:last-child::after{left:0;right:-9px}
 
   .card{background:linear-gradient(180deg,var(--panel) 0%,#20141c 100%);border:1px solid var(--line);
     border-radius:var(--radius);padding:clamp(14px,4vw,20px);box-shadow:var(--shadow);margin-bottom:16px}
@@ -329,7 +343,9 @@
   .walk-dur{margin-bottom:13px}
   .walk-dur label{font-size:13.5px;color:var(--text);font-weight:600}
   .walk-dur label b{color:var(--accent2);font-weight:800;font-size:15px}
-  .walk-dur input[type=range]{width:100%;margin-top:9px;accent-color:var(--accent2);height:22px}
+  /* 44px tall so it is comfortably draggable with a thumb — the visible track
+     stays slim, the extra height is touch area only */
+  .walk-dur input[type=range]{width:100%;margin-top:2px;accent-color:var(--accent2);height:44px;touch-action:pan-y}
   .dur-hint{font-size:11.5px;color:var(--muted);margin-top:2px}
   .route-info{font-size:13px;color:var(--text);line-height:1.55;margin-top:12px;background:var(--panel2);
     border:1px solid var(--line);border-radius:11px;padding:12px 13px}
@@ -350,7 +366,12 @@
   .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
   /* ── extra small-screen polish ── */
   @media(max-width:560px){
-    .dogname{font-size:26px}
+    /* sized so "doggyweather for <name>" sits on one line beside the mascot;
+       an unusually long name still wraps rather than overflowing */
+    h1{justify-content:center;gap:0 7px}
+    .brandname{font-size:clamp(18px,6.4vw,26px)}
+    .forword{font-size:clamp(13px,4.6vw,19px)}
+    .dogname{font-size:clamp(19px,7vw,29px)}
     .stage{font-size:9.5px;padding:6px 2px}
     .stage .se{font-size:14px}
     .header-loc button.act,.header-loc button.ghost{padding:10px 12px}
@@ -391,6 +412,7 @@
       <svg class="paw w" style="left:88%;top:34%;width:25px;height:25px;opacity:.30;transform:rotate(-30deg)"><use href="#pawIcon"/></svg>
       <svg class="paw w" style="left:96%;top:66%;width:19px;height:19px;opacity:.22;transform:rotate(20deg)"><use href="#pawIcon"/></svg>
     </div>
+    <div class="hbrand">
     <svg class="corgi" viewBox="0 0 200 210" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly dog sketch">
       <g fill="#eef2fa" stroke="#c5d0e6" stroke-width="3">
         <!-- tail -->
@@ -426,6 +448,7 @@
     <div class="htext">
       <h1><span class="brandname">doggyweather</span><span class="forword hide" id="forWord">for</span><span class="dogname" id="dogTitleName"></span></h1>
       <div class="sub">Local forecast + a smart dog‑walking safety index</div>
+    </div>
     </div>
     <div class="header-loc">
       <div class="searchbar">
