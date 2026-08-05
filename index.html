@@ -602,7 +602,7 @@
   <!-- 5-DAY -->
   <div id="dailyArea"></div>
 
-  <div class="foot">Weather data by <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) · Maps &amp; places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL) · Not veterinary or medical advice.</div>
+  <div class="foot">Weather data by <a href="https://open-meteo.com" target="_blank" rel="noopener">Open‑Meteo</a> (<a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC BY 4.0</a>) · Maps &amp; places © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors (ODbL) · Not veterinary or medical advice. · Anonymous, cookieless visitor stats via <a href="https://www.goatcounter.com" target="_blank" rel="noopener">GoatCounter</a>.</div>
 </div>
 
 <script>
@@ -1352,5 +1352,9 @@ $("dogBuild").addEventListener("change",e=>{localStorage.setItem(BUILD_KEY,e.tar
   $("loc").value="Palo Alto";loadEverything();
 })();
 </script>
+
+<!-- anonymous, cookieless visitor stats — no cookies, no IPs stored -->
+<script data-goatcounter="https://doggyweather.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
