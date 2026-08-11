@@ -1059,7 +1059,7 @@ function renderOutlook(hours,name){
     const lead=w.start.i===ni?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`;
     bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
       <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
-      <div class="bt-sub">Comfortable for a <b>${dur}</b> walk · feels around ${w.peak.feelsDisp}°.</div></div>`;
+      <div class="bt-sub">Comfortable for a <b>${dur}</b> walk · the air feels around ${w.peak.feelsDisp}° then.</div></div>`;
   }
   $("timeline").innerHTML=hours.map(hr=>{
     const best=!w.none&&hr.i>=w.start.i&&hr.i<=w.end.i;
@@ -1117,8 +1117,8 @@ function computeDogIndex(){
   const top=issues[0]; let verdict;
   if(score>=78) verdict=`Comfortable out there for ${name}. Enjoy the walk — bring water anyway.`;
   else if(top.k==="pave") verdict=`Main concern for ${name}: <b>hot pavement</b> — asphalt ≈ ${dispPave}° in the sun can burn paw pads.`;
-  else if(top.k==="heat") verdict=`Main concern for ${name}: <b>heat</b> — feels like ${dispFeels}°, above this breed's comfort zone.`;
-  else if(top.k==="cold") verdict=`Main concern for ${name}: <b>cold</b> — feels like ${dispFeels}°, chilly for this breed.`;
+  else if(top.k==="heat") verdict=`Main concern for ${name}: <b>heat</b> — the air feels like ${dispFeels}°, above this breed's comfort zone.`;
+  else if(top.k==="cold") verdict=`Main concern for ${name}: <b>cold</b> — the air feels like ${dispFeels}°, chilly for this breed.`;
   else if(top.k==="wind") verdict=`Main concern for ${name}: <b>wind</b> — gusts to ${dispGust} ${spdU()}.`;
   else if(top.k==="air") verdict=`Main concern for ${name}: <b>air quality</b> — US AQI ${aqi}.`;
   else verdict=`Main concern for ${name}: <b>fatigue / exertion</b> — keep it short and shaded.`;
@@ -1172,9 +1172,15 @@ function computeDogIndex(){
   // warning banner
   const wb=$("warnBanner"),wt=$("warnText");
   const warmAir=feels>=77||tempF>=77;   // 25°C — flag as a heat warning even before it turns severe
-  if(lvl==="danger"&&coldPen>=heatPen&&coldPen>=pavePen){wb.className="warnbanner show";wt.innerHTML=`Too cold/harsh for ${name} right now (feels like ${dispFeels}°). Bundle up and keep it very short.`;}
-  else if(lvl==="danger"||paveHot){wb.className="warnbanner show";wt.innerHTML=`Too hot for ${name} — pavement ≈ <b>${dispPave}°</b> can burn paws (feels like ${dispFeels}°). Walk on grass/shade or wait for cooler hours.`;}
-  else if(heavyHeat||warmAir||paveWarn){wb.className="warnbanner show";wt.innerHTML=`Heat caution for ${name}: feels like <b>${dispFeels}°</b>${paveWarn?`, pavement ≈ <b>${dispPave}°</b>`:''}. Keep the walk short &amp; shaded, bring water, and check the pavement (7‑second test).`;}
+  // Every temperature says what it measures. Air and pavement differ by 40-60°, so a
+  // bare "feels like" next to a pavement reading reads as if it describes the pavement.
+  if(lvl==="danger"&&coldPen>=heatPen&&coldPen>=pavePen){wb.className="warnbanner show";wt.innerHTML=`Too cold/harsh for ${name} right now — the air feels like <b>${dispFeels}°</b>. Bundle up and keep it very short.`;}
+  else if(lvl==="danger"||paveHot){wb.className="warnbanner show";
+    // only name the pavement when it is actually the hazard, otherwise this is plain air heat
+    wt.innerHTML=paveHot
+      ? `Too hot for ${name} — the air feels like <b>${dispFeels}°</b>, but pavement in the sun reaches ≈ <b>${dispPave}°</b>, hot enough to burn paws. Walk on grass or in shade, or wait for cooler hours.`
+      : `Too hot for ${name} — the air feels like <b>${dispFeels}°</b>. Walk on grass or in shade, or wait for cooler hours.`;}
+  else if(heavyHeat||warmAir||paveWarn){wb.className="warnbanner show";wt.innerHTML=`Heat caution for ${name}: the air feels like <b>${dispFeels}°</b>${paveWarn?`, and pavement in the sun reaches ≈ <b>${dispPave}°</b>`:''}. Keep the walk short &amp; shaded, bring water, and check the pavement (7‑second test).`;}
   else{wb.className="warnbanner";}
 }
 
