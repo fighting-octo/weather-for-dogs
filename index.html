@@ -85,12 +85,15 @@
   }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;
     display:flex;align-items:baseline;flex-wrap:wrap;gap:2px clamp(12px,2.4vw,20px)}
-  /* brand line: "doggyweather for <name>" — all three parts in the script face.
-     line-height leaves room for Pacifico's deep descenders (the g/y tails) so they
-     never collide with the tagline underneath. */
-  .brandname,.forword,.dogname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
+  /* brand line: [engraved tag] for <name> — the wordmark is the metal tag plate,
+     "for <name>" stays in the script face. line-height leaves room for Pacifico's
+     deep descenders (the g/y tails) so they never collide with the tagline. */
+  .forword,.dogname{font-family:'Pacifico','Snell Roundhand','Brush Script MT',cursive;
     font-weight:400;line-height:1.18}
-  .brandname{color:#fff;font-size:clamp(26px,7vw,38px);text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  /* the tag carries its own drop shadow and 2.8:1 aspect, so height drives the size
+     and width follows; it baseline-aligns on its bottom edge, sitting on the same
+     line as "for <name>". */
+  .tagplate{height:clamp(64px,11vw,96px);width:auto;max-width:100%;flex:0 1 auto;display:block}
   .forword{color:#fff;font-size:clamp(19px,5vw,27px);opacity:.92;text-shadow:0 2px 10px rgba(0,0,0,.35)}
   .forword.hide{display:none}
   .dogname{color:#7be6a0;font-size:clamp(28px,8vw,42px);
@@ -370,7 +373,9 @@
     /* sized so "doggyweather for <name>" sits on one line beside the mascot;
        an unusually long name still wraps rather than overflowing */
     h1{justify-content:center;gap:0 7px}
-    .brandname{font-size:clamp(18px,6.4vw,26px)}
+    /* only ~55% of the SVG's height is the tag body (the rest is ring + bail),
+       so it needs a taller box than the text it replaced to stay legible */
+    .tagplate{height:clamp(46px,14vw,62px)}
     .forword{font-size:clamp(13px,4.6vw,19px)}
     .dogname{font-size:clamp(19px,7vw,29px)}
     .stage{font-size:9.5px;padding:6px 2px}
@@ -447,7 +452,72 @@
       <path d="M93,109 Q100,122 107,109 Q103.5,116 100,116 Q96.5,116 93,109 Z" fill="#f2879a"/>
     </svg>
     <div class="htext">
-      <h1><span class="brandname">doggyweather</span><span class="forword hide" id="forWord">for</span><span class="dogname" id="dogTitleName"></span></h1>
+      <h1>
+        <svg class="tagplate" viewBox="0 0 1120 400" role="img" aria-label="doggyweather" xmlns="http://www.w3.org/2000/svg" font-family="DWSlab, 'Roboto Slab', Rockwell, serif">
+        <defs>
+          <style>
+            @font-face {
+              font-family: 'DWSlab';
+              font-weight: 700;
+              src: url(data:font/woff2;base64,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) format('woff2');
+            }
+          </style>
+          <linearGradient id="dwtag-metal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0"   stop-color="#fdf0b8"/>
+            <stop offset="0.10" stop-color="#f6d982"/>
+            <stop offset="0.48" stop-color="#e7b94e"/>
+            <stop offset="0.82" stop-color="#cf9f37"/>
+            <stop offset="1"   stop-color="#a87c26"/>
+          </linearGradient>
+          <linearGradient id="dwtag-ringmetal" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fdefb4"/>
+            <stop offset="0.5" stop-color="#e0af44"/>
+            <stop offset="1" stop-color="#9c7222"/>
+          </linearGradient>
+          <linearGradient id="dwtag-gloss" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0.55"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="dwtag-drop" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="9" stdDeviation="11" flood-color="#000000" flood-opacity="0.45"/>
+          </filter>
+          <mask id="dwtag-bailhole">
+            <rect x="0" y="0" width="1120" height="400" fill="#fff"/>
+            <circle cx="560.0" cy="116" r="12" fill="#000"/>
+          </mask>
+        </defs>
+
+        <!-- ===== ring + bail ===== -->
+        <g filter="url(#dwtag-drop)">
+          <!-- split ring -->
+          <circle cx="560.0" cy="78" r="35" fill="none" stroke="#7d5a1c" stroke-width="18"/>
+          <circle cx="560.0" cy="78" r="35" fill="none" stroke="url(#dwtag-ringmetal)" stroke-width="12"/>
+          <circle cx="560.0" cy="78" r="41.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
+          <circle cx="560.0" cy="78" r="28.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
+          <!-- bail (loop tab on top of tag) -->
+          <path d="M 532.0 148 Q 530.0 90 560.0 90 Q 590.0 90 588.0 148 Z" fill="url(#dwtag-ringmetal)" stroke="#8a6420" stroke-width="2" mask="url(#dwtag-bailhole)"/>
+          <circle cx="560.0" cy="116" r="12" fill="none" stroke="#8a6420" stroke-width="2.5"/>
+
+          <!-- ===== tag body ===== -->
+          <rect x="60" y="130" width="1000" height="220" rx="72" fill="url(#dwtag-metal)" stroke="#8a6420" stroke-width="3"/>
+          <!-- outer rim highlight -->
+          <rect x="62.5" y="132.5" width="995" height="215" rx="69.5" fill="none" stroke="#fff4cf" stroke-width="1.6" opacity="0.7"/>
+          <!-- top gloss -->
+          <rect x="74" y="140" width="972" height="92" rx="62" fill="url(#dwtag-gloss)"/>
+          <!-- engraved inner border -->
+          <rect x="86" y="156" width="948" height="168" rx="48" fill="none" stroke="#7a5115" stroke-width="3" opacity="0.85"/>
+          <rect x="86" y="158.4" width="948" height="168" rx="48" fill="none" stroke="#fbe7bf" stroke-width="1.3" opacity="0.6"/>
+
+          <!-- ===== engraved paws ===== -->
+          <g transform="translate(0,2.2)"><g fill="#fbe7bf"><ellipse cx="179.2" cy="255.0" rx="22.0" ry="18.0"/><ellipse cx="160.2" cy="240.0" rx="9.5" ry="13.5" transform="rotate(-18 160.2 240.0)"/><ellipse cx="171.7" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 171.7 226.0)"/><ellipse cx="187.2" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 187.2 226.0)"/><ellipse cx="198.7" cy="239.0" rx="9.5" ry="13.5" transform="rotate(18 198.7 239.0)"/></g><g fill="#fbe7bf"><ellipse cx="940.8" cy="255.0" rx="22.0" ry="18.0"/><ellipse cx="921.8" cy="240.0" rx="9.5" ry="13.5" transform="rotate(-18 921.8 240.0)"/><ellipse cx="933.3" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 933.3 226.0)"/><ellipse cx="948.8" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 948.8 226.0)"/><ellipse cx="960.3" cy="239.0" rx="9.5" ry="13.5" transform="rotate(18 960.3 239.0)"/></g></g>
+          <g fill="#5a3717"><ellipse cx="179.2" cy="255.0" rx="22.0" ry="18.0"/><ellipse cx="160.2" cy="240.0" rx="9.5" ry="13.5" transform="rotate(-18 160.2 240.0)"/><ellipse cx="171.7" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 171.7 226.0)"/><ellipse cx="187.2" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 187.2 226.0)"/><ellipse cx="198.7" cy="239.0" rx="9.5" ry="13.5" transform="rotate(18 198.7 239.0)"/></g><g fill="#5a3717"><ellipse cx="940.8" cy="255.0" rx="22.0" ry="18.0"/><ellipse cx="921.8" cy="240.0" rx="9.5" ry="13.5" transform="rotate(-18 921.8 240.0)"/><ellipse cx="933.3" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 933.3 226.0)"/><ellipse cx="948.8" cy="226.0" rx="9.5" ry="13.5" transform="rotate(0 948.8 226.0)"/><ellipse cx="960.3" cy="239.0" rx="9.5" ry="13.5" transform="rotate(18 960.3 239.0)"/></g>
+
+          <!-- ===== engraved wordmark ===== -->
+          <text x="560.0" y="276.2" font-size="92" font-weight="700" text-anchor="middle" fill="#fbe7bf" opacity="0.9">doggyweather</text>
+          <text x="560.0" y="274.0" font-size="92" font-weight="700" text-anchor="middle" fill="#5a3717">doggyweather</text>
+        </g>
+        </svg>
+        <span class="forword hide" id="forWord">for</span><span class="dogname" id="dogTitleName"></span></h1>
       <div class="sub">Local forecast + a smart dog‑walking safety index</div>
     </div>
     </div>
