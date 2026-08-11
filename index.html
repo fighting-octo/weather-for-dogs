@@ -95,13 +95,20 @@
   /* the tag carries its own drop shadow and 2.8:1 aspect, so height drives the size
      and width follows; it baseline-aligns on its bottom edge, sitting on the same
      line as "for <name>". */
-  /* The plate is 2.8:1, so its height drives a lot of width. The vw term is tuned
-     so it gives up height before the brand line runs out of room and wraps "for
-     <name>" onto a row of its own — one line matters more than maximum size. */
-  .tagplate{height:clamp(56px,8vw,96px);width:auto;max-width:100%;flex:0 1 auto;display:block}
+  /* Sized by WIDTH with height:auto — the plate is ~3:1, and if height were the
+     driver then max-width clamping would squash the box while the height held,
+     letterboxing the artwork inside it. Width-driven, both axes shrink together.
+     The vw term is tuned so it gives up size before the brand line runs out of
+     room and wraps "for <name>" onto a row of its own. */
+  .tagplate{width:clamp(170px,26vw,292px);height:auto;max-width:100%;min-width:150px;
+    flex:0 1 auto;display:block}   /* may shrink, but only to a 150px floor */
   .forword{color:#fff;font-size:clamp(19px,5vw,27px);opacity:.92;text-shadow:0 2px 10px rgba(0,0,0,.35)}
   .forword.hide{display:none}
-  .dogname{color:#7be6a0;font-size:clamp(28px,8vw,42px);
+  /* the vw term is gentler than the other two: the name is white-space:nowrap, so
+     on a narrow window a long one has no way to break and would run off the edge.
+     It still reaches the same 42px maximum from ~680px up, so wide screens are
+     unaffected — this only bites in the narrow band above the mobile breakpoint. */
+  .dogname{color:#7be6a0;font-size:clamp(28px,6.2vw,42px);
     text-shadow:0 2px 10px rgba(74,222,128,.35);white-space:nowrap}
   .dogname:empty{display:none}
   /* SVG weather icons scale with parent font-size */
@@ -114,10 +121,13 @@
      tallest item. Below 561px the tagline is hidden, so no compensation applies. */
   @media(min-width:561px){
     .corgi,.header-loc,.units{margin-bottom:26px}   /* tagline: ~16px + 10px margin */
-    /* Hold the brand line together: with nowrap, .htext's min-content width is the
-       whole line, so the header squeezes the search box (down to its 180px floor)
-       instead of folding "for <name>" onto a row of its own. If it still won't fit,
-       the header's own flex-wrap drops the search to the next row — never overflow. */
+  }
+  /* Hold the brand line together: with nowrap, .htext's min-content width is the
+     whole line, so the header squeezes the search box (down to its 180px floor)
+     instead of folding "for <name>" onto a row of its own.
+     Only above 900px, where the whole line demonstrably fits — forcing nowrap on a
+     narrower viewport pushes a long name past the right edge instead of wrapping. */
+  @media(min-width:900px){
     h1{flex-wrap:nowrap}
     .htext{min-width:min-content}
   }
@@ -392,9 +402,8 @@
     /* sized so "doggyweather for <name>" sits on one line beside the mascot;
        an unusually long name still wraps rather than overflowing */
     h1{justify-content:center;gap:0 7px}
-    /* only ~55% of the SVG's height is the tag body (the rest is ring + bail),
-       so it needs a taller box than the text it replaced to stay legible */
-    .tagplate{height:clamp(46px,14vw,62px)}
+    /* width-driven here too, so the plate keeps its proportions when squeezed */
+    .tagplate{width:clamp(140px,42vw,190px)}
     .forword{font-size:clamp(13px,4.6vw,19px)}
     .dogname{font-size:clamp(19px,7vw,29px)}
     .stage{font-size:9.5px;padding:6px 2px}
@@ -472,7 +481,7 @@
     </svg>
     <div class="htext">
       <h1>
-        <svg class="tagplate" viewBox="0 0 1120 400" role="img" aria-label="doggyweather" xmlns="http://www.w3.org/2000/svg" font-family="DWSlab, 'Roboto Slab', Rockwell, serif">
+        <svg class="tagplate" viewBox="28 40 1064 350" role="img" aria-label="doggyweather" xmlns="http://www.w3.org/2000/svg" font-family="DWSlab, 'Roboto Slab', Rockwell, serif">
         <defs>
           <style>
             @font-face {
@@ -508,14 +517,18 @@
 
         <!-- ===== ring + bail ===== -->
         <g filter="url(#dwtag-drop)">
-          <!-- split ring -->
-          <circle cx="560.0" cy="78" r="35" fill="none" stroke="#7d5a1c" stroke-width="18"/>
-          <circle cx="560.0" cy="78" r="35" fill="none" stroke="url(#dwtag-ringmetal)" stroke-width="12"/>
-          <circle cx="560.0" cy="78" r="41.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
-          <circle cx="560.0" cy="78" r="28.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
-          <!-- bail (loop tab on top of tag) -->
-          <path d="M 532.0 148 Q 530.0 90 560.0 90 Q 590.0 90 588.0 148 Z" fill="url(#dwtag-ringmetal)" stroke="#8a6420" stroke-width="2" mask="url(#dwtag-bailhole)"/>
-          <circle cx="560.0" cy="116" r="12" fill="none" stroke="#8a6420" stroke-width="2.5"/>
+          <!-- ring + bail scaled about (560,148), the point where the bail meets
+               the body, so it stays attached while giving the plate more room -->
+          <g transform="translate(560,148) scale(0.75) translate(-560,-148)">
+            <!-- split ring -->
+            <circle cx="560.0" cy="78" r="35" fill="none" stroke="#7d5a1c" stroke-width="18"/>
+            <circle cx="560.0" cy="78" r="35" fill="none" stroke="url(#dwtag-ringmetal)" stroke-width="12"/>
+            <circle cx="560.0" cy="78" r="41.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
+            <circle cx="560.0" cy="78" r="28.5" fill="none" stroke="#79571b" stroke-width="1.4" opacity="0.6"/>
+            <!-- bail (loop tab on top of tag) -->
+            <path d="M 532.0 148 Q 530.0 90 560.0 90 Q 590.0 90 588.0 148 Z" fill="url(#dwtag-ringmetal)" stroke="#8a6420" stroke-width="2" mask="url(#dwtag-bailhole)"/>
+            <circle cx="560.0" cy="116" r="12" fill="none" stroke="#8a6420" stroke-width="2.5"/>
+          </g>
 
           <!-- ===== tag body ===== -->
           <rect x="60" y="130" width="1000" height="220" rx="72" fill="url(#dwtag-metal)" stroke="#8a6420" stroke-width="3"/>
