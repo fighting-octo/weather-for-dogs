@@ -63,7 +63,9 @@
   @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-6px) rotate(1.5deg)}}
   .htext{flex:1 1 180px;min-width:0}
   /* location search living in the header, upper-right */
-  .header-loc{flex:0 0 auto;width:clamp(180px,28vw,240px);display:flex;flex-direction:column;gap:6px;z-index:1;position:relative}
+  /* shrinkable down to its 180px floor: giving the search box back its slack is
+     what keeps "for <name>" on the brand line at narrower desktop widths */
+  .header-loc{flex:0 1 auto;width:clamp(180px,28vw,240px);min-width:180px;display:flex;flex-direction:column;gap:6px;z-index:1;position:relative}
   .header-loc .searchbar{margin:0;padding:6px;gap:6px;border-radius:11px}
   .header-loc input#loc{padding:8px 10px;min-width:0}
   .header-loc button.act{padding:8px 12px;font-size:13px}
@@ -84,7 +86,7 @@
     .header-loc{order:3;flex:1 1 150px;width:auto}
   }
   h1{font-size:clamp(20px,5.5vw,26px);margin:0;font-weight:800;letter-spacing:.2px;
-    display:flex;align-items:baseline;flex-wrap:wrap;gap:2px clamp(12px,2.4vw,20px)}
+    display:flex;align-items:center;flex-wrap:wrap;gap:2px clamp(12px,2.4vw,20px)}
   /* brand line: [engraved tag] for <name> — the wordmark is the metal tag plate,
      "for <name>" stays in the script face. line-height leaves room for Pacifico's
      deep descenders (the g/y tails) so they never collide with the tagline. */
@@ -93,7 +95,10 @@
   /* the tag carries its own drop shadow and 2.8:1 aspect, so height drives the size
      and width follows; it baseline-aligns on its bottom edge, sitting on the same
      line as "for <name>". */
-  .tagplate{height:clamp(64px,11vw,96px);width:auto;max-width:100%;flex:0 1 auto;display:block}
+  /* The plate is 2.8:1, so its height drives a lot of width. The vw term is tuned
+     so it gives up height before the brand line runs out of room and wraps "for
+     <name>" onto a row of its own — one line matters more than maximum size. */
+  .tagplate{height:clamp(56px,8vw,96px);width:auto;max-width:100%;flex:0 1 auto;display:block}
   .forword{color:#fff;font-size:clamp(19px,5vw,27px);opacity:.92;text-shadow:0 2px 10px rgba(0,0,0,.35)}
   .forword.hide{display:none}
   .dogname{color:#7be6a0;font-size:clamp(28px,8vw,42px);
@@ -102,6 +107,20 @@
   /* SVG weather icons scale with parent font-size */
   .wxi{width:1em;height:1em;display:inline-block;vertical-align:middle}
   .sub{color:var(--muted);font-size:clamp(11px,3vw,13px);margin-top:10px}
+  /* The tagline hangs below the brand line inside .htext, which pulls that line
+     above the header's centre. Reserving the same drop under the other header
+     items centres them all on one shared line, so the plate, "for <name>" and the
+     search box read as a single row. Costs no header height — .htext is still the
+     tallest item. Below 561px the tagline is hidden, so no compensation applies. */
+  @media(min-width:561px){
+    .corgi,.header-loc,.units{margin-bottom:26px}   /* tagline: ~16px + 10px margin */
+    /* Hold the brand line together: with nowrap, .htext's min-content width is the
+       whole line, so the header squeezes the search box (down to its 180px floor)
+       instead of folding "for <name>" onto a row of its own. If it still won't fit,
+       the header's own flex-wrap drops the search to the next row — never overflow. */
+    h1{flex-wrap:nowrap}
+    .htext{min-width:min-content}
+  }
   .units{display:flex;gap:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;flex:0 0 auto}
   .units button{position:relative;background:transparent;color:var(--muted);border:none;padding:8px 11px;font-size:13px;font-weight:700;cursor:pointer}
   .units button:first-child{border-radius:9px 0 0 9px}
