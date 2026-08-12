@@ -19,6 +19,14 @@
     --warm:#ffb27a;
     --warn:#ffb020; --danger:#ff6b74; --good:#54df88; --cold:#8fd3ff;
     --radius:16px; --shadow:0 10px 34px rgba(0,0,0,.42);
+    /* One knob drives the whole brand line. The tag plate's width sets the size of
+       the engraving inside it, and "for <name>" is derived from the same value, so
+       the three always read at the same optical size however the viewport changes.
+       Factors come from measured x-heights (the engraving is a slab face, the name
+       is Pacifico): matching x-height means name font-size = 0.1133 x plate width. */
+    --plateW:clamp(200px,26vw,340px);
+    --nameFs:calc(var(--plateW)*0.1133);
+    --forFs:calc(var(--plateW)*0.0816);
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
@@ -100,15 +108,14 @@
      letterboxing the artwork inside it. Width-driven, both axes shrink together.
      The vw term is tuned so it gives up size before the brand line runs out of
      room and wraps "for <name>" onto a row of its own. */
-  .tagplate{width:clamp(170px,26vw,292px);height:auto;max-width:100%;min-width:150px;
+  .tagplate{width:var(--plateW);height:auto;max-width:100%;min-width:150px;
     flex:0 1 auto;display:block}   /* may shrink, but only to a 150px floor */
-  .forword{color:#fff;font-size:clamp(19px,5vw,27px);opacity:.92;text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .forword{color:#fff;font-size:var(--forFs);opacity:.92;text-shadow:0 2px 10px rgba(0,0,0,.35)}
   .forword.hide{display:none}
-  /* the vw term is gentler than the other two: the name is white-space:nowrap, so
-     on a narrow window a long one has no way to break and would run off the edge.
-     It still reaches the same 42px maximum from ~680px up, so wide screens are
-     unaffected — this only bites in the narrow band above the mobile breakpoint. */
-  .dogname{color:#7be6a0;font-size:clamp(28px,6.2vw,42px);
+  /* derived from --plateW (see :root) so the name always matches the engraving's
+     optical size. It is white-space:nowrap, so scaling it with the plate also stops
+     a long name running off a narrow window. */
+  .dogname{color:#7be6a0;font-size:var(--nameFs);
     text-shadow:0 2px 10px rgba(74,222,128,.35);white-space:nowrap}
   .dogname:empty{display:none}
   /* SVG weather icons scale with parent font-size */
@@ -401,10 +408,10 @@
     /* sized so "doggyweather for <name>" sits on one line beside the mascot;
        an unusually long name still wraps rather than overflowing */
     h1{justify-content:center;gap:0 7px}
-    /* width-driven here too, so the plate keeps its proportions when squeezed */
-    .tagplate{width:clamp(140px,42vw,190px)}
-    .forword{font-size:clamp(13px,4.6vw,19px)}
-    .dogname{font-size:clamp(19px,7vw,29px)}
+    /* Retune the single knob for phones; the name and "for" follow automatically
+       from it, so the three stay optically matched here too. Sized so the whole
+       line — mascot, plate, "for <name>" — still fits one row at 390px. */
+    :root{--plateW:clamp(150px,46vw,200px)}
     .stage{font-size:9.5px;padding:6px 2px}
     .stage .se{font-size:14px}
     .header-loc button.act,.header-loc button.ghost{padding:10px 14px}
