@@ -349,14 +349,19 @@
   .bmc-btn:hover{filter:brightness(1.05)}
   /* pollen card + support ask side by side; the ask is a narrow right-hand column
      that drops below the pollen card as soon as there isn't room for both. */
-  .pollen-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(205px,265px);gap:16px;
-    align-items:start;margin-bottom:16px}
+  /* stretch (not start) so the ask is the same height as the pollen card beside it,
+     with its content centred in that column rather than stranded at the top */
+  .pollen-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,290px);gap:16px;
+    align-items:stretch;margin-bottom:16px}
   .pollen-row>.card{margin-bottom:0}     /* the grid gap does the spacing */
-  .support-card{text-align:center}
-  .support-card h2{justify-content:center}
-  .support-copy{color:var(--muted);font-size:12.5px;line-height:1.55;margin:0 0 14px}
+  .support-card{display:flex;flex-direction:column;justify-content:center;text-align:center}
+  .support-card h2{justify-content:center;margin-bottom:12px}
+  .support-copy{color:var(--muted);font-size:12.5px;line-height:1.6;margin:0 0 12px}
+  .support-copy b{color:var(--text)}
+  .support-thanks{color:var(--muted);font-size:11.5px;margin-top:13px}
   @media(max-width:760px){
     .pollen-row{grid-template-columns:1fr}   /* stack: ask sits under the pollen card */
+    .support-card{padding-top:18px;padding-bottom:18px}
     .support-card .bmc-btn{width:100%}       /* full-width tap target on a phone */
   }
   .leafmap{height:clamp(260px,50vw,340px);border-radius:12px;overflow:hidden;position:relative;z-index:0;border:1px solid var(--line)}
@@ -650,8 +655,10 @@
     </div>
     <aside class="card support-card">
       <h2>☕ Do you like the app?</h2>
-      <p class="support-copy">doggyweather is free, with no ads and no account. If it helped you plan a walk, you can buy me a coffee.</p>
+      <p class="support-copy">doggyweather is <b>free for everyone</b> — no ads, no accounts, nothing locked away. It's a small labour of love for dogs and the people who walk them.</p>
+      <p class="support-copy">If it's helped you find a better time to head out with your dog, you can buy me a coffee. Completely optional, and genuinely appreciated.</p>
       <a class="bmc-btn" id="bmcBtn" href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+      <div class="support-thanks">Thank you 🐾</div>
     </aside>
   </div>
 
