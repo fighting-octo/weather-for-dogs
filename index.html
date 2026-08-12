@@ -342,29 +342,23 @@
   .pcell .pbar i{display:block;height:100%}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
   a{color:var(--accent)}
-  /* premium walk-safety map (Buy Me a Coffee) */
-  .premium-badge{font-size:10px;font-weight:800;background:linear-gradient(90deg,#ffd400,#ffb000);color:#3a2600;
-    padding:3px 9px;border-radius:999px;letter-spacing:.5px;text-transform:none;margin-left:auto;flex:0 0 auto}
-  .map-teaser{position:relative;height:170px;border-radius:12px;overflow:hidden;border:1px solid var(--line);
-    background:
-      repeating-linear-gradient(0deg,transparent 0 26px,rgba(124,240,196,.06) 26px 27px),
-      repeating-linear-gradient(90deg,transparent 0 26px,rgba(107,166,255,.06) 26px 27px),
-      radial-gradient(circle at 50% 55%,rgba(124,240,196,.18),transparent 60%),var(--panel2)}
-  .map-teaser .lockicon{position:absolute;inset:0;display:grid;place-items:center;font-size:42px;
-    background:rgba(20,16,25,.25);backdrop-filter:blur(2px)}
-  .lock-cta{text-align:center;margin-top:15px}
-  .lock-cta p{color:var(--muted);font-size:13px;line-height:1.5;margin:0 0 13px}
-  .bmc-btn{display:inline-flex;align-items:center;gap:8px;background:#FFDD00;color:#0d0d0d;font-weight:800;
-    padding:12px 20px;border-radius:12px;text-decoration:none;font-size:15px;box-shadow:0 4px 16px rgba(255,221,0,.28)}
+  /* support ask (Buy Me a Coffee) — the walk guide itself is free for everyone */
+  .bmc-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#FFDD00;color:#0d0d0d;
+    font-weight:800;padding:12px 20px;border-radius:12px;text-decoration:none;font-size:15px;min-height:44px;
+    box-shadow:0 4px 16px rgba(255,221,0,.28)}
   .bmc-btn:hover{filter:brightness(1.05)}
-  .unlock-link{display:block;margin:2px auto 0;padding:14px 16px;min-height:44px;background:none;border:none;
-    color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer}
-  .unlock-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:14px}
-  .unlock-row input{width:min(240px,70vw);text-align:center;letter-spacing:1px;text-transform:uppercase}
-  .code-msg{font-size:12.5px;margin-top:10px;min-height:16px}
-  .code-msg.ok{color:var(--good)} .code-msg.err{color:var(--danger)}
-  .lock-cta p b{color:var(--text)}
-  .code-hint{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.45}
+  /* pollen card + support ask side by side; the ask is a narrow right-hand column
+     that drops below the pollen card as soon as there isn't room for both. */
+  .pollen-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(205px,265px);gap:16px;
+    align-items:start;margin-bottom:16px}
+  .pollen-row>.card{margin-bottom:0}     /* the grid gap does the spacing */
+  .support-card{text-align:center}
+  .support-card h2{justify-content:center}
+  .support-copy{color:var(--muted);font-size:12.5px;line-height:1.55;margin:0 0 14px}
+  @media(max-width:760px){
+    .pollen-row{grid-template-columns:1fr}   /* stack: ask sits under the pollen card */
+    .support-card .bmc-btn{width:100%}       /* full-width tap target on a phone */
+  }
   .leafmap{height:clamp(260px,50vw,340px);border-radius:12px;overflow:hidden;position:relative;z-index:0;border:1px solid var(--line)}
   .map-fallback{display:grid;place-items:center;height:100%;color:var(--muted);font-size:13px;text-align:center;padding:16px}
   .map-legend{font-size:11.5px;color:var(--muted);margin-top:11px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
@@ -645,33 +639,27 @@
     </div>
   </div>
 
-  <!-- POLLEN & ALLERGY — directly below the "right now" section -->
-  <div class="card" id="pollenCard">
-    <h2>🌾 Pollen &amp; Allergy Index</h2>
-    <div class="hint">General airborne allergen levels for the selected area.</div>
-    <div class="allergysum" id="allergySum">Loading…</div>
-    <div class="pollen" id="pollenGrid"></div>
-    <div class="note" id="pollenNote"></div>
+  <!-- POLLEN & ALLERGY — directly below the "right now" section, with the support ask beside it -->
+  <div class="pollen-row">
+    <div class="card" id="pollenCard">
+      <h2>🌾 Pollen &amp; Allergy Index</h2>
+      <div class="hint">General airborne allergen levels for the selected area.</div>
+      <div class="allergysum" id="allergySum">Loading…</div>
+      <div class="pollen" id="pollenGrid"></div>
+      <div class="note" id="pollenNote"></div>
+    </div>
+    <aside class="card support-card">
+      <h2>☕ Do you like the app?</h2>
+      <p class="support-copy">doggyweather is free, with no ads and no account. If it helped you plan a walk, you can buy me a coffee.</p>
+      <a class="bmc-btn" id="bmcBtn" href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+    </aside>
   </div>
 
-  <!-- PREMIUM: neighborhood walk-safety map (unlocked via Buy Me a Coffee) -->
-  <div class="card premium" id="mapCard">
-    <h2>🗺️ Neighborhood Walk Guide <span class="premium-badge">PREMIUM ☕</span></h2>
+  <!-- Neighborhood walk-safety map — free for everyone -->
+  <div class="card" id="mapCard">
+    <h2>🗺️ Neighborhood Walk Guide</h2>
     <div class="hint">A good route and nearby dog parks for a walk of your chosen length around <span id="mapPlace">your area</span>. The suggested length starts from today's conditions — adjust it however you like.</div>
-    <div id="mapLocked">
-      <div class="map-teaser"><div class="lockicon">🔒</div></div>
-      <div class="lock-cta">
-        <p>This is a supporter feature. ☕ After you buy a coffee, your unlock code appears instantly in the <b>thank‑you message</b> — enter it below to get walk routes and nearby dog parks.</p>
-        <a class="bmc-btn" id="bmcBtn" href="#" target="_blank" rel="noopener">☕ Buy me a coffee</a>
-        <div class="unlock-row">
-          <input type="text" id="codeInput" placeholder="Enter unlock code" autocomplete="off" spellcheck="false">
-          <button class="act" id="codeBtn">Unlock</button>
-        </div>
-        <div class="code-hint">💡 Your code is in the Buy Me a Coffee thank‑you message shown right after your donation.</div>
-        <div class="code-msg" id="codeMsg"></div>
-      </div>
-    </div>
-    <div id="mapUnlocked" style="display:none">
+    <div id="mapBody">
       <div class="walk-dur">
         <label for="walkMin">I want to walk <b id="walkMinLbl">45</b> min</label>
         <input type="range" id="walkMin" min="15" max="120" step="5" value="45">
@@ -693,7 +681,6 @@
         <a href="https://www.fossgis.de/" target="_blank" rel="noopener">FOSSGIS e.V.</a>
         Map display by <a href="https://leafletjs.com/" target="_blank" rel="noopener">Leaflet</a> (BSD‑2‑Clause).
       </div>
-      <button class="unlock-link" id="relockBtn" style="margin-top:10px">Lock again</button>
     </div>
   </div>
 
@@ -849,7 +836,7 @@ async function loadEverything(){
     const [wx,air]=await Promise.all([fetchForecast(),fetchAir()]);
     STATE.data=wx; STATE.air=air;
     renderCurrent(); renderHourly(); renderDaily(); computeDogIndex(); renderPollen();
-    if(isPremium()) updateMap();
+    updateMap();
   }catch(e){$("currentArea").innerHTML=`<div class="card"><div class="err">Couldn't load weather: ${e.message}</div></div>`;}
 }
 async function fetchForecast(){
@@ -1108,7 +1095,7 @@ function computeDogIndex(){
   // rest-of-day outlook: best time to walk + hourly walkability
   renderOutlook(buildOutlook(b), name);
 
-  // premium walk guide: remember conditions; map refreshes on location load / duration change
+  // walk guide: remember conditions; map refreshes on location load / duration change
   STATE.score=score; STATE.mapLevel=L; STATE.walkName=name;
   if(STATE.walkMinutes==null) STATE.walkMinutes=walkPlan(score).minutes;
 
@@ -1236,27 +1223,15 @@ function seasonalPollenEstimate(){
   return{l:worst,c:map[worst].c,msg,items};
 }
 
-/* ============================ PREMIUM WALK-SAFETY MAP (Buy Me a Coffee) ============================ */
+/* ============================ NEIGHBORHOOD WALK-SAFETY MAP ============================ */
 const BMC_URL="https://www.buymeacoffee.com/fightingocc";
-/* SHA-256 of the unlock code (default code: "OCTO-COFFEE"). Put the SAME code in your
-   Buy Me a Coffee thank-you message / extra so supporters receive it after paying.
-   To change the code: hash the new UPPER-CASE code and replace this digest. */
-const UNLOCK_HASH="a632073c2992d69cbc8294fa8b6d3fb68d614dc885f83de38a1ef133904ada6e";
-const PREMIUM_KEY="wfd_premium";
 let MAP=null,MAP_LAYER=null;
-const isPremium=()=>localStorage.getItem(PREMIUM_KEY)==="1";
 /* 1-hour-walk logic, scaled by the current walkability level */
 function walkPlan(score){
   const minutes=score>=80?60:score>=60?45:score>=42?25:score>=25?12:5;
   const pace=3.2;                       // km/h for a relaxed, sniffy dog walk
   const roundKm=pace*(minutes/60), reachKm=roundKm/2;
   return {minutes,roundKm,reachKm};
-}
-function reflectPremium(){
-  const on=isPremium();
-  if($("mapLocked")) $("mapLocked").style.display=on?"none":"block";
-  if($("mapUnlocked")) $("mapUnlocked").style.display=on?"block":"none";
-  if(on) updateMap();
 }
 const PACE_KMH=3.2;                     // relaxed, sniffy dog-walk pace
 let POI_CACHE={}, guideToken=0;
@@ -1304,7 +1279,7 @@ async function valhallaIso(lat,lon,minutes){
   }catch(e){ return null; }
 }
 async function updateMap(){
-  if(!isPremium()||STATE.lat==null) return;
+  if(STATE.lat==null) return;
   const el=$("leafmap"); if(!el) return;
   if($("mapPlace")) $("mapPlace").textContent=STATE.name?STATE.name.split(",")[0]:"your area";
   if(typeof L==="undefined"){ el.innerHTML='<div class="map-fallback">🗺️ The map needs an internet connection to load.</div>'; return; }
@@ -1398,29 +1373,14 @@ $("geoBtn").addEventListener("click",()=>{
     STATE.name=`My location (${STATE.lat.toFixed(2)}, ${STATE.lon.toFixed(2)})`;st.style.display="none";loadEverything();
   },()=>{st.className="err";st.textContent="Couldn't get your location. Search instead.";});
 });
-/* premium map: Buy-Me-a-Coffee link + code-based unlock */
+/* support ask: Buy-Me-a-Coffee link */
 if($("bmcBtn")) $("bmcBtn").href=BMC_URL;
-async function sha256hex(s){
-  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s.trim().toUpperCase()));
-  return [...new Uint8Array(buf)].map(x=>x.toString(16).padStart(2,"0")).join("");
-}
-async function tryUnlock(){
-  const msg=$("codeMsg"), val=$("codeInput").value.trim();
-  if(!val){ msg.className="code-msg err"; msg.textContent="Enter the code from your coffee receipt."; return; }
-  let ok=false;
-  try{ ok=(await sha256hex(val))===UNLOCK_HASH; }catch(e){ ok=false; }
-  if(ok){ localStorage.setItem(PREMIUM_KEY,"1"); msg.className="code-msg ok"; msg.textContent="Unlocked — thank you! ☕"; reflectPremium(); }
-  else{ msg.className="code-msg err"; msg.textContent="That code isn't right. Check your Buy Me a Coffee message and try again."; }
-}
-if($("codeBtn")) $("codeBtn").addEventListener("click",tryUnlock);
-if($("codeInput")) $("codeInput").addEventListener("keydown",e=>{if(e.key==="Enter")tryUnlock();});
 let walkDebounce=null;
 if($("walkMin")) $("walkMin").addEventListener("input",e=>{
   const v=+e.target.value; STATE.walkMinutes=v; localStorage.setItem("wfd_walkmin",v);
   if($("walkMinLbl")) $("walkMinLbl").textContent=v;
-  clearTimeout(walkDebounce); walkDebounce=setTimeout(()=>{if(isPremium())updateMap();},450);
+  clearTimeout(walkDebounce); walkDebounce=setTimeout(updateMap,450);
 });
-if($("relockBtn")) $("relockBtn").addEventListener("click",()=>{localStorage.removeItem(PREMIUM_KEY);if($("codeInput"))$("codeInput").value="";if($("codeMsg"))$("codeMsg").textContent="";reflectPremium();});
 
 $("units").addEventListener("click",e=>{
   const btn=e.target.closest("button"); if(!btn) return;
@@ -1447,7 +1407,7 @@ const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units",AGE_KEY=
   const bd=localStorage.getItem(BUILD_KEY); if(bd)$("dogBuild").value=bd;
   const u=localStorage.getItem(UNIT_KEY); if(u){STATE.units=u;[...$("units").children].forEach(x=>x.classList.toggle("on",x.dataset.u===u));}
   const wm=localStorage.getItem("wfd_walkmin"); if(wm){STATE.walkMinutes=+wm; if($("walkMin")){$("walkMin").value=wm; $("walkMinLbl").textContent=wm;}}
-  reflectPremium();
+  updateMap();
 })();
 $("dogName").addEventListener("input",e=>{localStorage.setItem(NAME_KEY,e.target.value);setDogTitle(e.target.value);if(STATE.data)computeDogIndex();});
 $("breed").addEventListener("change",e=>{localStorage.setItem(BREED_KEY,e.target.value);if(STATE.data)computeDogIndex();});
