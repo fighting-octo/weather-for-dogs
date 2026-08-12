@@ -378,7 +378,22 @@
   .map-info{font-size:13px;color:var(--text);line-height:1.55;margin-top:11px;background:var(--panel2);
     border:1px solid var(--line);border-radius:11px;padding:12px 13px}
   .map-info b{color:var(--accent2)}
-  /* walk guide: duration control, route info, dog-park list */
+  /* walk guide: start address, duration control, route info, dog-park list */
+  .walk-from{margin-bottom:14px}
+  .walk-from label{display:block;font-size:13.5px;color:var(--text);font-weight:600;margin-bottom:7px}
+  .wf-opt{color:var(--muted);font-weight:500}
+  .wf-row{display:flex;flex-wrap:wrap;gap:8px}
+  .wf-row input{flex:1 1 230px;min-width:0}
+  .wf-msg{font-size:12px;margin-top:7px;min-height:15px;color:var(--muted);line-height:1.45}
+  .wf-msg.err{color:var(--danger)}
+  .wf-msg.ok{color:var(--good)}
+  .wf-pick{width:100%;margin-top:9px;display:none}
+  .wf-pick.show{display:block}
+  @media(max-width:560px){
+    /* stack on a phone: the field takes the row, the two buttons share the next one */
+    .wf-row input{flex:1 1 100%}
+    .wf-row button{flex:1 1 0;min-height:44px}
+  }
   .walk-dur{margin-bottom:13px}
   .walk-dur label{font-size:13.5px;color:var(--text);font-weight:600}
   .walk-dur label b{color:var(--accent2);font-weight:800;font-size:15px}
@@ -674,6 +689,16 @@
     <h2>🗺️ Neighborhood Walk Guide</h2>
     <div class="hint">A good route and nearby dog parks for a walk of your chosen length around <span id="mapPlace">your area</span>. The suggested length starts from today's conditions — adjust it however you like.</div>
     <div id="mapBody">
+      <div class="walk-from">
+        <label for="walkAddr">Start from a specific address <span class="wf-opt">— optional, otherwise the town centre is used</span></label>
+        <div class="wf-row">
+          <input type="text" id="walkAddr" placeholder="Street and town, e.g. 12 Oak Street, Springfield" autocomplete="street-address" enterkeyhint="search" spellcheck="false">
+          <button class="act" id="walkAddrBtn">Set start</button>
+          <button class="ghost" id="walkAddrClear" hidden>Reset</button>
+        </div>
+        <select class="wf-pick" id="walkAddrPick" aria-label="Choose the matching address"></select>
+        <div class="wf-msg" id="walkAddrMsg"></div>
+      </div>
       <div class="walk-dur">
         <label for="walkMin">I want to walk <b id="walkMinLbl">45</b> min</label>
         <input type="range" id="walkMin" min="15" max="120" step="5" value="45">
@@ -690,6 +715,7 @@
         available under the <a href="https://opendatacommons.org/licenses/odbl/" target="_blank" rel="noopener">Open Database License (ODbL)</a>;
         map tiles © OpenStreetMap contributors. Dog parks and green spaces queried via the
         <a href="https://overpass-api.de/" target="_blank" rel="noopener">Overpass API</a>.
+        Address search by <a href="https://nominatim.openstreetmap.org/" target="_blank" rel="noopener">Nominatim</a>.
         Walking routes by <a href="https://project-osrm.org/" target="_blank" rel="noopener">OSRM</a> and reachable‑area rings by
         <a href="https://valhalla.github.io/valhalla/" target="_blank" rel="noopener">Valhalla</a>, both on public demo servers operated by
         <a href="https://www.fossgis.de/" target="_blank" rel="noopener">FOSSGIS e.V.</a>
@@ -802,7 +828,7 @@ function iconFor(code){
 }
 
 /* ============================ STATE / HELPERS ============================ */
-let STATE={lat:null,lon:null,name:"",data:null,air:null,units:"imperial"};
+let STATE={lat:null,lon:null,name:"",data:null,air:null,units:"imperial",walkOrigin:null};
 const $=id=>document.getElementById(id);
 const round=n=>Math.round(n);
 const spdU=()=>STATE.units==="metric"?"km/h":"mph";
@@ -839,7 +865,65 @@ async function doSearch(){
   }
 }
 $("picker").addEventListener("change",e=>{const r=$("picker")._results[+e.target.value];if(r)selectPlace(r);});
-function selectPlace(p){STATE.lat=p.latitude;STATE.lon=p.longitude;STATE.name=labelFor(p);$("loc").value=p.name;loadEverything();}
+function selectPlace(p){STATE.lat=p.latitude;STATE.lon=p.longitude;STATE.name=labelFor(p);$("loc").value=p.name;
+  clearWalkOrigin(true);   // a start address in the old town would strand the map there
+  loadEverything();}
+
+/* ---- street-level start point for the walk guide ----
+   Open-Meteo's geocoder resolves places, not house numbers, so address lookup goes
+   to Nominatim (OpenStreetMap). Their usage policy allows this on an explicit action
+   only — never per keystroke — so it runs on submit, not while typing. */
+const ADDR_KEY="wfd_walkaddr";
+async function geocodeAddress(q){
+  const p=new URLSearchParams({format:"jsonv2",limit:"6",q});
+  if(STATE.lat!=null){                     // bias matches toward the chosen town
+    const d=0.45;
+    p.set("viewbox",[STATE.lon-d,STATE.lat+d,STATE.lon+d,STATE.lat-d].join(","));
+  }
+  const r=await fetch(`https://nominatim.openstreetmap.org/search?${p}`);
+  if(!r.ok) throw new Error("geocoder "+r.status);
+  return await r.json();
+}
+function wfMsg(cls,text){const m=$("walkAddrMsg");if(m){m.className="wf-msg"+(cls?" "+cls:"");m.textContent=text;}}
+async function doAddrSearch(){
+  const q=$("walkAddr").value.trim(), pick=$("walkAddrPick");
+  pick.classList.remove("show");
+  if(!q){ wfMsg("err","Type a street and town first, e.g. “12 Oak Street, Springfield”."); return; }
+  wfMsg("","Looking up that address…");
+  let res;
+  try{ res=await geocodeAddress(q); }
+  catch(e){ wfMsg("err","Address lookup isn't responding right now — try again in a moment."); return; }
+  if(!res.length){ wfMsg("err",`No address found for “${q}”. Adding the town or postcode usually helps.`); return; }
+  if(res.length===1){ applyAddr(res[0]); return; }
+  pick.innerHTML=`<option value="" disabled selected>Choose the right match (${res.length})…</option>`+
+    res.map((p,i)=>`<option value="${i}">${p.display_name}</option>`).join("");
+  pick.classList.add("show"); pick._res=res;
+  wfMsg("","More than one match — pick the right one.");
+}
+function applyAddr(p){
+  // display_name is comma-space separated; trim each part or the rejoin doubles the spaces
+  const label=p.display_name.split(",").slice(0,3).map(s=>s.trim()).filter(Boolean).join(", ");
+  $("walkAddrPick").classList.remove("show");
+  $("walkAddr").value=label;
+  setWalkOrigin({lat:+p.lat,lon:+p.lon,label});
+  wfMsg("ok","Walk starts at "+label+".");
+}
+function setWalkOrigin(o){
+  STATE.walkOrigin=o;
+  try{localStorage.setItem(ADDR_KEY,JSON.stringify(o));}catch(e){}
+  if($("walkAddrClear")) $("walkAddrClear").hidden=false;
+  updateMap();
+}
+function clearWalkOrigin(quiet){
+  const had=!!STATE.walkOrigin;
+  STATE.walkOrigin=null;
+  try{localStorage.removeItem(ADDR_KEY);}catch(e){}
+  if($("walkAddr")) $("walkAddr").value="";
+  if($("walkAddrPick")) $("walkAddrPick").classList.remove("show");
+  if($("walkAddrClear")) $("walkAddrClear").hidden=true;
+  wfMsg("","");
+  if(!quiet&&had) updateMap();
+}
 
 /* ============================ FETCH ============================ */
 async function loadEverything(){
@@ -850,6 +934,8 @@ async function loadEverything(){
     const [wx,air]=await Promise.all([fetchForecast(),fetchAir()]);
     STATE.data=wx; STATE.air=air;
     renderCurrent(); renderHourly(); renderDaily(); computeDogIndex(); renderPollen();
+    // a saved start address from another town would strand the map far from the forecast
+    if(STATE.walkOrigin&&haversineKm(STATE.lat,STATE.lon,STATE.walkOrigin.lat,STATE.walkOrigin.lon)>60) clearWalkOrigin(true);
     updateMap();
   }catch(e){$("currentArea").innerHTML=`<div class="card"><div class="err">Couldn't load weather: ${e.message}</div></div>`;}
 }
@@ -1295,7 +1381,8 @@ async function valhallaIso(lat,lon,minutes){
 async function updateMap(){
   if(STATE.lat==null) return;
   const el=$("leafmap"); if(!el) return;
-  if($("mapPlace")) $("mapPlace").textContent=STATE.name?STATE.name.split(",")[0]:"your area";
+  if($("mapPlace")) $("mapPlace").textContent=STATE.walkOrigin?STATE.walkOrigin.label
+    :(STATE.name?STATE.name.split(",")[0]:"your area");
   if(typeof L==="undefined"){ el.innerHTML='<div class="map-fallback">🗺️ The map needs an internet connection to load.</div>'; return; }
   if(!MAP){
     MAP=L.map(el,{scrollWheelZoom:false});
@@ -1304,7 +1391,8 @@ async function updateMap(){
     MAP_LAYER=L.layerGroup().addTo(MAP);
   }
   const my=++guideToken;
-  const lat=STATE.lat, lon=STATE.lon;
+  const O=STATE.walkOrigin;                       // explicit street address, if given
+  const lat=O?O.lat:STATE.lat, lon=O?O.lon:STATE.lon;
   const minutes=STATE.walkMinutes||walkPlan(STATE.score||80).minutes;
   const color=(STATE.mapLevel&&STATE.mapLevel.color)||"#4ade80";
   if($("walkMin")){ $("walkMin").value=minutes; $("walkMinLbl").textContent=minutes; }
@@ -1312,7 +1400,8 @@ async function updateMap(){
   if($("durHint")) $("durHint").textContent=`≈ ${(reachKm*2).toFixed(1)} km round trip at a relaxed pace — about ${(reachKm).toFixed(1)} km out and back.`;
 
   MAP_LAYER.clearLayers();
-  L.marker([lat,lon],{icon:pin("📍",30,true)}).addTo(MAP_LAYER).bindPopup("Start here 🐾");
+  L.marker([lat,lon],{icon:pin("📍",30,true)}).addTo(MAP_LAYER)
+    .bindPopup(O?`Start here 🐾<br>${O.label}`:"Start here 🐾");
   const provisional=L.circle([lat,lon],{radius:reachKm*1000,color,weight:1.5,fillColor:color,fillOpacity:.07,dashArray:"5 6"}).addTo(MAP_LAYER);
   MAP.fitBounds(L.latLng(lat,lon).toBounds(Math.max(reachKm*2400,900)));
   setTimeout(()=>{try{MAP.invalidateSize()}catch(e){}},150);
@@ -1384,11 +1473,18 @@ $("geoBtn").addEventListener("click",()=>{
   const st=$("locStatus");st.style.display="block";st.className="loading";st.textContent="Locating…";
   navigator.geolocation.getCurrentPosition(pos=>{
     STATE.lat=pos.coords.latitude;STATE.lon=pos.coords.longitude;
-    STATE.name=`My location (${STATE.lat.toFixed(2)}, ${STATE.lon.toFixed(2)})`;st.style.display="none";loadEverything();
+    STATE.name=`My location (${STATE.lat.toFixed(2)}, ${STATE.lon.toFixed(2)})`;st.style.display="none";
+    clearWalkOrigin(true);loadEverything();
   },()=>{st.className="err";st.textContent="Couldn't get your location. Search instead.";});
 });
 /* support ask: Buy-Me-a-Coffee link */
 if($("bmcBtn")) $("bmcBtn").href=BMC_URL;
+if($("walkAddrBtn")) $("walkAddrBtn").addEventListener("click",doAddrSearch);
+if($("walkAddrClear")) $("walkAddrClear").addEventListener("click",()=>clearWalkOrigin(false));
+if($("walkAddr")) $("walkAddr").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();doAddrSearch();}});
+if($("walkAddrPick")) $("walkAddrPick").addEventListener("change",e=>{
+  const r=$("walkAddrPick")._res&&$("walkAddrPick")._res[+e.target.value]; if(r) applyAddr(r);
+});
 let walkDebounce=null;
 if($("walkMin")) $("walkMin").addEventListener("input",e=>{
   const v=+e.target.value; STATE.walkMinutes=v; localStorage.setItem("wfd_walkmin",v);
@@ -1420,6 +1516,12 @@ const NAME_KEY="wfd_dogName",BREED_KEY="wfd_breed",UNIT_KEY="wfd_units",AGE_KEY=
   const ag=localStorage.getItem(AGE_KEY); if(ag)$("dogAge").value=ag;
   const bd=localStorage.getItem(BUILD_KEY); if(bd)$("dogBuild").value=bd;
   const u=localStorage.getItem(UNIT_KEY); if(u){STATE.units=u;[...$("units").children].forEach(x=>x.classList.toggle("on",x.dataset.u===u));}
+  try{const raw=localStorage.getItem(ADDR_KEY);
+    if(raw){const o=JSON.parse(raw);
+      if(o&&isFinite(o.lat)&&isFinite(o.lon)){STATE.walkOrigin=o;
+        if($("walkAddr"))$("walkAddr").value=o.label||"";
+        if($("walkAddrClear"))$("walkAddrClear").hidden=false;}}
+  }catch(e){}
   const wm=localStorage.getItem("wfd_walkmin"); if(wm){STATE.walkMinutes=+wm; if($("walkMin")){$("walkMin").value=wm; $("walkMinLbl").textContent=wm;}}
   updateMap();
 })();
