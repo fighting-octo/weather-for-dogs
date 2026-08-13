@@ -14,17 +14,21 @@
   integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
   :root{
-    --bg:#181119; --panel:#2a2029; --panel2:#352a35; --line:#48394a;
-    --text:#f5eef4; --muted:#b6a6b2; --accent:#6ba6ff; --accent2:#7ff0c6;
-    --warm:#ffb27a;
-    --warn:#ffb020; --danger:#ff6b74; --good:#54df88; --cold:#8fd3ff;
-    --radius:16px; --shadow:0 10px 34px rgba(0,0,0,.42);
+    /* Warm palette taken from the print flyer: navy ink, gold accents, cream paper.
+       The page is light now; the sticky header stays navy so the gold tag reads
+       against it exactly as it does on the flyer. */
+    --bg:#faf3e8; --panel:#ffffff; --panel2:#f7edde; --line:#e7d8bf;
+    --text:#1b2a5e; --muted:#6d6252; --accent:#1b2a5e; --accent2:#b07d1f;
+    --warm:#e0a038;
+    --warn:#d99614; --danger:#c92a2a; --good:#2e9e4f; --cold:#3b6ea5;
+    --navy:#1b2a5e; --navyDeep:#141f45; --gold:#e3ad3f; --goldSoft:#f7e7c4;
+    --radius:16px; --shadow:0 8px 22px rgba(27,42,94,.10);
     /* One knob drives the whole brand line. The tag plate's width sets the size of
        the engraving inside it, and "for <name>" is derived from the same value, so
        the three always read at the same optical size however the viewport changes.
        Factors come from measured x-heights (the engraving is a slab face, the name
        is Pacifico): matching x-height means name font-size = 0.1133 x plate width. */
-    --plateW:clamp(200px,26vw,340px);
+    --plateW:clamp(230px,30vw,400px);
     --nameFs:calc(var(--plateW)*0.1133);
     --forFs:calc(var(--plateW)*0.0816);
   }
@@ -33,10 +37,9 @@
   body{
     margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:
-      radial-gradient(1200px 560px at 85% -14%, rgba(255,158,86,.26), transparent 60%),
-      radial-gradient(950px 520px at 6% 3%, rgba(255,120,120,.13), transparent 55%),
-      radial-gradient(820px 660px at 50% 118%, rgba(255,150,80,.10), transparent 62%),
-      linear-gradient(180deg,#2a1c22 0%, var(--bg) 60%);
+      radial-gradient(1200px 560px at 85% -14%, rgba(227,173,63,.20), transparent 60%),
+      radial-gradient(950px 520px at 6% 3%, rgba(227,173,63,.10), transparent 55%),
+      linear-gradient(180deg,#fdf9f1 0%, var(--bg) 55%);
     background-attachment:fixed;
     color:var(--text); min-height:100vh;
     padding:18px 14px calc(46px + env(safe-area-inset-bottom));
@@ -52,19 +55,19 @@
   /* header + mascot */
   header.top{position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
     margin:0 -14px 18px;padding:10px 14px;
-    background:linear-gradient(180deg,rgba(30,18,24,.97) 0%,rgba(30,18,24,.82) 100%);
+    background:linear-gradient(180deg,rgba(20,31,69,.98) 0%,rgba(27,42,94,.94) 100%);
     backdrop-filter:blur(12px) saturate(1.15);-webkit-backdrop-filter:blur(12px) saturate(1.15);
-    border-bottom:1px solid var(--line)}
-  .corgi{width:clamp(66px,16vw,92px);height:auto;flex:0 0 auto;display:block;
+    border-bottom:3px solid var(--gold)}
+  .mascot{width:clamp(74px,17vw,104px);height:auto;flex:0 0 auto;display:block;
     filter:drop-shadow(0 5px 12px rgba(0,0,0,.3));
     animation:bob 3.6s ease-in-out infinite;transform-origin:50% 90%}
   /* decorative paw-print trail, top mid → right of header */
   .pawtrail{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-  .paw{position:absolute;fill:var(--accent2);filter:drop-shadow(0 1px 2px rgba(0,0,0,.25))}
+  .paw{position:absolute;fill:var(--gold);filter:none}
   /* white prints sit further back than the green ones — soft-light keeps them
      inside the header gradient instead of punching through it */
-  .paw.w{fill:#fff;mix-blend-mode:soft-light;filter:none}
-  .htext,.units,.corgi{position:relative;z-index:1}
+  .paw.w{fill:var(--goldSoft);mix-blend-mode:normal;filter:none}
+  .htext,.units,.mascot{position:relative;z-index:1}
   /* transparent on desktop — the mascot and title stay direct header children.
      On mobile it becomes a real row so the pair can be centred as one unit. */
   .hbrand{display:contents}
@@ -86,7 +89,7 @@
     header.top{gap:8px 10px;padding:8px 12px;justify-content:center}
     .hbrand{display:flex;order:0;flex:1 1 100%;min-width:0;
       align-items:center;justify-content:center;gap:10px;position:relative;z-index:1}
-    .corgi{width:44px}
+    .mascot{width:52px}
     .htext{flex:0 1 auto;min-width:0;text-align:center}
     .sub{display:none}                 /* free vertical space in the frozen header */
     .pawtrail{opacity:.55}             /* same prints, less busy in the short header */
@@ -127,7 +130,7 @@
      search box read as a single row. Costs no header height — .htext is still the
      tallest item. Below 561px the tagline is hidden, so no compensation applies. */
   @media(min-width:561px){
-    .corgi,.header-loc,.units{margin-bottom:26px}   /* tagline: ~16px + 10px margin */
+    .mascot,.header-loc,.units{margin-bottom:26px}   /* tagline: ~16px + 10px margin */
   }
   /* Hold the brand line together: with nowrap, .htext's min-content width is the
      whole line, so the header squeezes the search box (down to its 180px floor)
@@ -149,7 +152,7 @@
   .units button:first-child::after{left:-9px;right:0}
   .units button:last-child::after{left:0;right:-9px}
 
-  .card{background:linear-gradient(180deg,var(--panel) 0%,#20141c 100%);border:1px solid var(--line);
+  .card{background:var(--panel);border:1px solid var(--line);
     border-radius:var(--radius);padding:clamp(14px,4vw,20px);box-shadow:var(--shadow);margin-bottom:16px}
   /* ── TYPE HIERARCHY ───────────────────────────────────────────
      Tier 1  card title  → .card h2  (uppercase 14, bold; hero=green)
@@ -169,7 +172,7 @@
     min-height:44px}   /* 44px minimum touch target */
   input[type=text]:focus,select:focus{border-color:var(--accent)}
   input#loc{flex:1;min-width:0}
-  button.act{background:var(--accent);color:#04122b;border:none;padding:11px 16px;border-radius:11px;
+  button.act{background:var(--accent);color:#fff8ea;border:none;padding:11px 16px;border-radius:11px;
     font-size:14px;font-weight:700;cursor:pointer}
   button.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line);padding:11px 14px;border-radius:11px;font-weight:600;cursor:pointer}
   select.picker{width:100%;margin-top:10px;display:none}
@@ -272,11 +275,11 @@
     background:var(--panel2);border:1px solid var(--line);color:var(--muted);opacity:.55;line-height:1.25}
   .stage .se{font-size:15px;display:block;margin-bottom:2px}
   .stage.active{opacity:1;transform:translateY(-2px)}
-  .stage.s1.active{background:rgba(74,222,128,.2);border-color:var(--good);color:#bff5d0}
-  .stage.s2.active{background:rgba(250,204,21,.2);border-color:#facc15;color:#fde68a}
-  .stage.s3.active{background:rgba(255,176,32,.2);border-color:var(--warn);color:#ffe0a3}
-  .stage.s4.active{background:rgba(255,120,60,.2);border-color:#ff783c;color:#ffc7a8}
-  .stage.s5.active{background:rgba(255,92,108,.22);border-color:var(--danger);color:#ffc0c7}
+  .stage.s1.active{background:rgba(46,158,79,.15);border-color:var(--good);color:#1d6b34}
+  .stage.s2.active{background:rgba(78,158,53,.15);border-color:#4e9e35;color:#356b23}
+  .stage.s3.active{background:rgba(217,150,20,.18);border-color:var(--warn);color:#8a5d05}
+  .stage.s4.active{background:rgba(226,102,26,.15);border-color:#e2661a;color:#a2440d}
+  .stage.s5.active{background:rgba(201,42,42,.13);border-color:var(--danger);color:#8f1d1d}
 
   .verdict{font-size:14px;margin-top:12px;line-height:1.5}
   .factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-top:16px}
@@ -284,7 +287,7 @@
   .factor .fl{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;gap:6px}
   .factor .fl b{color:var(--text)}
   .factor .fv{font-size:13.5px;font-weight:600}
-  .factor .fbar{height:6px;background:#17121f;border-radius:6px;margin-top:8px;overflow:hidden}
+  .factor .fbar{height:6px;background:#efe3cd;border-radius:6px;margin-top:8px;overflow:hidden}
   .factor .fbar i{display:block;height:100%;border-radius:6px}
   .recs{margin-top:16px;display:flex;flex-direction:column;gap:8px}
   .rec{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);
@@ -317,7 +320,7 @@
     padding:8px 2px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
   .tl-cell.best{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;background:rgba(124,240,196,.10)}
   .tl-time{font-size:clamp(9px,2.3vw,10.5px);color:var(--muted);font-weight:700;white-space:nowrap}
-  .tl-bar{width:7px;height:40px;background:#17121f;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
+  .tl-bar{width:7px;height:40px;background:#efe3cd;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
   .tl-bar i{display:block;width:100%;border-radius:6px}
   .tl-em{font-size:clamp(11px,2.7vw,13px);line-height:1}
   .tl-temp{font-size:clamp(10px,2.5vw,12px);font-weight:700}
@@ -345,7 +348,7 @@
   .pcell{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px}
   .pcell .pn{font-size:13px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
   .pcell .pl{font-size:12.5px;margin-top:6px;font-weight:700}
-  .pcell .pbar{height:7px;background:#17121f;border-radius:6px;margin-top:8px;overflow:hidden}
+  .pcell .pbar{height:7px;background:#efe3cd;border-radius:6px;margin-top:8px;overflow:hidden}
   .pcell .pbar i{display:block;height:100%}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:0 0 auto}
   a{color:var(--accent)}
@@ -418,6 +421,20 @@
   .map-attrib a{color:var(--muted);text-decoration:underline}
   .map-attrib b{color:var(--text);font-weight:700}
   .foot{text-align:center;color:var(--muted);font-size:12px;margin-top:6px}
+  /* ── the header band is navy, so everything inside it inverts ── */
+  header.top .sub{color:rgba(247,231,196,.72)}
+  .forword{color:var(--goldSoft);text-shadow:0 2px 10px rgba(0,0,0,.35)}
+  .dogname{color:var(--gold);text-shadow:0 2px 12px rgba(0,0,0,.4)}
+  .units{background:rgba(255,255,255,.10);border-color:rgba(247,231,196,.30)}
+  .units button{color:#e9dcc2}
+  .units button.on{background:var(--gold);color:#2c1e04}
+  .searchbar{background:rgba(255,255,255,.10);border-color:rgba(247,231,196,.26)}
+  .header-loc input[type=text]{background:#fffdf8;border-color:rgba(247,231,196,.45)}
+  .header-loc input[type=text]:focus{border-color:var(--gold)}
+  .header-loc button.act{background:var(--gold);color:#2c1e04}
+  .header-loc button.ghost{background:rgba(255,255,255,.12);border-color:rgba(247,231,196,.28);color:#f3e6cc}
+  .header-loc .loading{color:rgba(247,231,196,.8)}
+  .header-loc select.picker{background:#fffdf8;border-color:rgba(247,231,196,.45);color:var(--navy)}
   /* ── extra small-screen polish ── */
   @media(max-width:560px){
     /* sized so "doggyweather for <name>" sits on one line beside the mascot;
@@ -426,7 +443,7 @@
     /* Retune the single knob for phones; the name and "for" follow automatically
        from it, so the three stay optically matched here too. Sized so the whole
        line — mascot, plate, "for <name>" — still fits one row at 390px. */
-    :root{--plateW:clamp(150px,46vw,200px)}
+    :root{--plateW:clamp(150px,44vw,196px)}
     .stage{font-size:9.5px;padding:6px 2px}
     .stage .se{font-size:14px}
     .header-loc button.act,.header-loc button.ghost{padding:10px 14px}
@@ -468,37 +485,45 @@
       <svg class="paw w" style="left:96%;top:66%;width:19px;height:19px;opacity:.22;transform:rotate(20deg)"><use href="#pawIcon"/></svg>
     </div>
     <div class="hbrand">
-    <svg class="corgi" viewBox="0 0 200 210" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly dog sketch">
-      <g fill="#eef2fa" stroke="#c5d0e6" stroke-width="3">
+    <svg class="mascot" viewBox="0 0 200 210" fill="none" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Friendly dog">
+      <g stroke="#a8621f" stroke-width="3">
         <!-- tail -->
-        <path d="M126,150 C146,148 154,128 143,118 C137,113 129,119 132,129 C134,138 127,140 126,150 Z"/>
-        <!-- floppy ears -->
-        <path d="M72,58 C52,62 44,96 55,124 C61,138 78,135 82,118 C86,97 88,66 84,56 C82,50 76,52 72,58 Z"/>
-        <path d="M128,58 C148,62 156,96 145,124 C139,138 122,135 118,118 C114,97 112,66 116,56 C118,50 124,52 128,58 Z"/>
+        <path d="M128,150 C150,146 158,124 145,113 C138,107 129,114 133,125 C136,135 129,139 128,150 Z" fill="#eba55c"/>
         <!-- sitting body -->
-        <path d="M74,104 C60,130 56,160 72,178 C84,189 116,189 128,178 C144,160 140,130 126,104 C116,117 84,117 74,104 Z"/>
+        <path d="M74,104 C58,132 54,162 72,180 C85,192 117,192 130,180 C148,162 142,132 126,104 C116,118 84,118 74,104 Z" fill="#eba55c"/>
         <!-- front legs + paws -->
-        <rect x="80" y="150" width="17" height="36" rx="8.5"/>
-        <rect x="103" y="150" width="17" height="36" rx="8.5"/>
-        <ellipse cx="88.5" cy="185" rx="11" ry="6.5"/>
-        <ellipse cx="111.5" cy="185" rx="11" ry="6.5"/>
+        <rect x="79" y="152" width="18" height="36" rx="9" fill="#eba55c"/>
+        <rect x="103" y="152" width="18" height="36" rx="9" fill="#eba55c"/>
+        <ellipse cx="88" cy="187" rx="11.5" ry="6.5" fill="#f6c58c"/>
+        <ellipse cx="112" cy="187" rx="11.5" ry="6.5" fill="#f6c58c"/>
         <!-- head -->
-        <circle cx="100" cy="78" r="36"/>
+        <circle cx="100" cy="76" r="37" fill="#eba55c"/>
+      </g>
+      <!-- white chest blaze -->
+      <path d="M100,116 C113,132 113,162 100,180 C87,162 87,132 100,116 Z" fill="#fff6e8"/>
+      <!-- floppy ears over the head -->
+      <g stroke="#a8621f" stroke-width="3">
+        <path d="M70,50 C47,57 39,96 54,125 C63,141 81,135 83,116 C86,93 87,58 83,48 C81,42 74,44 70,50 Z" fill="#d1832f"/>
+        <path d="M130,50 C153,57 161,96 146,125 C137,141 119,135 117,116 C114,93 113,58 117,48 C119,42 126,44 130,50 Z" fill="#d1832f"/>
       </g>
       <!-- muzzle -->
-      <ellipse cx="100" cy="96" rx="21" ry="16" fill="#f7faff" stroke="#c5d0e6" stroke-width="2.6"/>
-      <!-- toe lines -->
-      <g stroke="#c5d0e6" stroke-width="2"><line x1="88.5" y1="181" x2="88.5" y2="188"/><line x1="111.5" y1="181" x2="111.5" y2="188"/></g>
+      <ellipse cx="100" cy="94" rx="22" ry="16.5" fill="#fbe0b9" stroke="#a8621f" stroke-width="2.6"/>
+      <!-- collar + name tag -->
+      <path d="M76,108 C86,119 114,119 124,108" stroke="#8a5a2b" stroke-width="9" fill="none"/>
+      <circle cx="100" cy="121" r="7.5" fill="#e3ad3f" stroke="#9c7222" stroke-width="2"/>
+      <!-- brows -->
+      <path d="M79,57 C83,51 91,51 95,56" stroke="#2c1e12" stroke-width="3" fill="none"/>
+      <path d="M105,56 C109,51 117,51 121,57" stroke="#2c1e12" stroke-width="3" fill="none"/>
       <!-- eyes -->
-      <circle cx="86" cy="74" r="4.6" fill="#33405c"/><circle cx="114" cy="74" r="4.6" fill="#33405c"/>
-      <circle cx="87.6" cy="72.4" r="1.6" fill="#fff"/><circle cx="115.6" cy="72.4" r="1.6" fill="#fff"/>
+      <circle cx="86" cy="72" r="7.2" fill="#2c1e12"/><circle cx="114" cy="72" r="7.2" fill="#2c1e12"/>
+      <circle cx="88.6" cy="69.2" r="2.5" fill="#fff"/><circle cx="116.6" cy="69.2" r="2.5" fill="#fff"/>
       <!-- nose + mouth -->
-      <ellipse cx="100" cy="89" rx="8.5" ry="6.4" fill="#33405c"/>
-      <path d="M100,95 L100,101" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M100,101 C100,109 91,112 86,107" fill="none" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M100,101 C100,109 109,112 114,107" fill="none" stroke="#33405c" stroke-width="2.6" stroke-linecap="round"/>
+      <ellipse cx="100" cy="87" rx="9" ry="6.6" fill="#2c1e12"/>
+      <path d="M100,93 L100,99" stroke="#2c1e12" stroke-width="2.6"/>
+      <path d="M100,99 C100,107 91,110 86,105" fill="none" stroke="#2c1e12" stroke-width="2.6"/>
+      <path d="M100,99 C100,107 109,110 114,105" fill="none" stroke="#2c1e12" stroke-width="2.6"/>
       <!-- tongue -->
-      <path d="M93,109 Q100,122 107,109 Q103.5,116 100,116 Q96.5,116 93,109 Z" fill="#f2879a"/>
+      <path d="M93,107 Q100,120 107,107 Q103.5,114 100,114 Q96.5,114 93,107 Z" fill="#f2879a"/>
     </svg>
     <div class="htext">
       <h1>
@@ -798,7 +823,7 @@ const wmo=c=>WMO[c]||["—","🌡️"];
 /* crisp, colorful icons that render identically on every OS (no emoji tofu) */
 function svgWrap(inner){return `<svg viewBox="0 0 64 64" class="wxi" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;}
 function rays(cx,cy,r){
-  let g='<g stroke="#ffb020" stroke-width="3.2" stroke-linecap="round">';
+  let g='<g stroke="#d99614" stroke-width="3.2" stroke-linecap="round">';
   const R1=r+5,R2=r+11;
   for(let a=0;a<360;a+=45){const t=a*Math.PI/180,c=Math.cos(t),s=Math.sin(t);
     g+=`<line x1="${(cx+c*R1).toFixed(1)}" y1="${(cy+s*R1).toFixed(1)}" x2="${(cx+c*R2).toFixed(1)}" y2="${(cy+s*R2).toFixed(1)}"/>`;}
@@ -1079,11 +1104,11 @@ function scoreCore(x,b){
   return {score:Math.max(0,Math.min(100,round(100-total))),heatPen,coldPen,windPen,airPen,fatigue,precipPen,pavePen,pavement};
 }
 function levelOf(s){
-  if(s>=80)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#4ade80"};
-  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"Fine with a little care",color:"#facc15"};
-  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#ffb020"};
-  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#ff783c"};
-  return{lvl:"danger",stageN:5,emoji:"🛑",title:"DANGER",subtitle:"Better to stay indoors right now",color:"#ff5c6c"};
+  if(s>=80)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#2e9e4f"};
+  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"Fine with a little care",color:"#4e9e35"};
+  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#d99614"};
+  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#e2661a"};
+  return{lvl:"danger",stageN:5,emoji:"🛑",title:"DANGER",subtitle:"Better to stay indoors right now",color:"#c92a2a"};
 }
 function durationFor(s){
   if(s>=80)return"45–60+ min";
@@ -1157,7 +1182,7 @@ function renderOutlook(hours,name){
       <div class="tl-temp">${hr.tempDisp}°</div></div>`;
   }).join("");
   $("tlTitle").textContent="Walkability · next 12 hours";
-  $("tlLegend").innerHTML=[["Safe","#4ade80"],["Good","#facc15"],["Caution","#ffb020"],["Risky","#ff783c"],["Danger","#ff5c6c"]]
+  $("tlLegend").innerHTML=[["Safe","#2e9e4f"],["Good","#4e9e35"],["Caution","#d99614"],["Risky","#e2661a"],["Danger","#c92a2a"]]
     .map(([l,c])=>`<span><span class="dot" style="width:8px;height:8px;background:${c}"></span>${l}</span>`).join("");
 }
 
@@ -1274,10 +1299,10 @@ function computeDogIndex(){
 /* ============================ POLLEN ============================ */
 function pollenLevel(v){
   if(v==null)return null;
-  if(v<10)return{l:"Low",c:"#4ade80",pct:15};
-  if(v<30)return{l:"Moderate",c:"#facc15",pct:45};
-  if(v<70)return{l:"High",c:"#fb923c",pct:72};
-  return{l:"Very high",c:"#ff5c6c",pct:95};
+  if(v<10)return{l:"Low",c:"#2e9e4f",pct:15};
+  if(v<30)return{l:"Moderate",c:"#d99614",pct:45};
+  if(v<70)return{l:"High",c:"#e2661a",pct:72};
+  return{l:"Very high",c:"#c92a2a",pct:95};
 }
 function airNowIndex(){const t=STATE.air.hourly.time,nowIso=STATE.data.current.time.slice(0,13);let i=t.findIndex(x=>x.slice(0,13)===nowIso);return i<0?0:i;}
 function renderPollen(){
@@ -1315,7 +1340,7 @@ function seasonalPollenEstimate(){
   const tree=[1,2,3,4].includes(sm)?"High":[0,5].includes(sm)?"Moderate":"Low";
   const grass=[4,5,6,7].includes(sm)?"High":[3,8].includes(sm)?"Moderate":"Low";
   const weed=[7,8,9].includes(sm)?"High":[6,10].includes(sm)?"Moderate":"Low";
-  const map={"Low":{c:"#4ade80",pct:18},"Moderate":{c:"#facc15",pct:50},"High":{c:"#fb923c",pct:78}};
+  const map={"Low":{c:"#2e9e4f",pct:18},"Moderate":{c:"#d99614",pct:50},"High":{c:"#e2661a",pct:78}};
   const items=[{label:"Tree pollen",em:"🌳",lvl:tree,...map[tree]},{label:"Grass pollen",em:"🌱",lvl:grass,...map[grass]},{label:"Weed / Ragweed",em:"🌾",lvl:weed,...map[weed]}];
   const worst=[tree,grass,weed].includes("High")?"High":[tree,grass,weed].includes("Moderate")?"Moderate":"Low";
   const msg=worst==="High"?"Peak season for at least one allergen — sensitive people may want antihistamines and to limit midday outdoor time."
@@ -1394,7 +1419,7 @@ async function updateMap(){
   const O=STATE.walkOrigin;                       // explicit street address, if given
   const lat=O?O.lat:STATE.lat, lon=O?O.lon:STATE.lon;
   const minutes=STATE.walkMinutes||walkPlan(STATE.score||80).minutes;
-  const color=(STATE.mapLevel&&STATE.mapLevel.color)||"#4ade80";
+  const color=(STATE.mapLevel&&STATE.mapLevel.color)||"#2e9e4f";
   if($("walkMin")){ $("walkMin").value=minutes; $("walkMinLbl").textContent=minutes; }
   const reachKm=PACE_KMH*(minutes/60)/2;             // one-way reach for an out-and-back
   if($("durHint")) $("durHint").textContent=`≈ ${(reachKm*2).toFixed(1)} km round trip at a relaxed pace — about ${(reachKm).toFixed(1)} km out and back.`;
