@@ -129,7 +129,11 @@
   .dogname:empty{display:none}
   /* SVG weather icons scale with parent font-size */
   .wxi{width:1em;height:1em;display:inline-block;vertical-align:middle}
-  .sub{color:var(--muted);font-size:clamp(11px,3vw,13px);margin-top:10px}
+  /* The tag artwork starts 3% into its own SVG box (viewBox 28..1092, body from x=60),
+     so the tagline needs the same inset to line up with where the plate visually
+     begins rather than with the invisible edge of the element. Hidden on phones. */
+  .sub{color:var(--muted);font-size:clamp(11px,3vw,13px);margin-top:10px;
+    margin-left:calc(var(--plateW)*0.0301)}
   /* The tagline hangs below the brand line inside .htext, which pulls that line
      above the header's centre. Reserving the same drop under the other header
      items centres them all on one shared line, so the plate, "for <name>" and the
@@ -260,15 +264,15 @@
   @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 
   .gauge{border-radius:14px;padding:16px;border:1px solid var(--line);position:relative}
-  .gauge.lvl-good{background:linear-gradient(180deg,rgba(74,222,128,.15),transparent);border-color:rgba(74,222,128,.45)}
-  .gauge.lvl-ok{background:linear-gradient(180deg,rgba(250,204,21,.13),transparent);border-color:rgba(250,204,21,.4)}
-  .gauge.lvl-caution{background:linear-gradient(180deg,rgba(255,176,32,.15),transparent);border-color:rgba(255,176,32,.5)}
-  .gauge.lvl-risky{background:linear-gradient(180deg,rgba(255,120,60,.16),transparent);border-color:rgba(255,120,60,.55)}
-  .gauge.lvl-danger{background:linear-gradient(180deg,rgba(255,92,108,.18),transparent);border-color:rgba(255,92,108,.6)}
+  .gauge.lvl-good{background:linear-gradient(180deg,rgba(46,158,79,.10),rgba(255,255,255,0));border-color:rgba(46,158,79,.30)}
+  .gauge.lvl-ok{background:linear-gradient(180deg,rgba(78,158,53,.10),rgba(255,255,255,0));border-color:rgba(78,158,53,.28)}
+  .gauge.lvl-caution{background:linear-gradient(180deg,rgba(217,150,20,.12),rgba(255,255,255,0));border-color:rgba(217,150,20,.32)}
+  .gauge.lvl-risky{background:linear-gradient(180deg,rgba(226,102,26,.11),rgba(255,255,255,0));border-color:rgba(226,102,26,.32)}
+  .gauge.lvl-danger{background:linear-gradient(180deg,rgba(201,42,42,.10),rgba(255,255,255,0));border-color:rgba(201,42,42,.30)}
   .gscore{display:flex;align-items:center;gap:14px}
   .ring{width:68px;height:68px;border-radius:50%;flex:0 0 auto;
-    background:conic-gradient(var(--c,var(--accent2)) calc(var(--p,0)*1%), rgba(255,255,255,.09) 0);
-    display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+    background:conic-gradient(var(--c,var(--accent2)) calc(var(--p,0)*1%), #ece1cc 0);
+    display:grid;place-items:center;box-shadow:0 2px 8px rgba(122,96,50,.16)}
   .ring-in{width:53px;height:53px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
   .ring-in span{font-size:22px;font-weight:800;letter-spacing:-.5px}
   .tt-wrap{min-width:0;flex:1}
@@ -276,11 +280,14 @@
   .tt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
 
   /* clear condition-stage scale */
-  .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:16px 0 6px}
-  .stage{text-align:center;padding:7px 3px;border-radius:9px;font-size:10.5px;font-weight:700;
-    background:var(--panel2);border:1px solid var(--line);color:var(--muted);opacity:.55;line-height:1.25}
-  .stage .se{font-size:15px;display:block;margin-bottom:2px}
-  .stage.active{opacity:1;transform:translateY(-2px)}
+  .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:15px 0 4px}
+  /* inactive stages are quiet chips with no outline — only the current one carries
+     colour, which keeps the row calm instead of five competing boxes */
+  .stage{text-align:center;padding:8px 3px;border-radius:12px;font-size:10.5px;font-weight:700;
+    background:rgba(240,231,214,.5);border:1px solid transparent;color:var(--muted);opacity:.6;line-height:1.25;
+    transition:opacity .18s ease,transform .18s ease}
+  .stage .se{font-size:14px;display:block;margin-bottom:2px}
+  .stage.active{opacity:1;transform:translateY(-2px);box-shadow:0 2px 9px rgba(122,96,50,.12)}
   .stage.s1.active{background:rgba(46,158,79,.15);border-color:var(--good);color:#1d6b34}
   .stage.s2.active{background:rgba(78,158,53,.15);border-color:#4e9e35;color:#356b23}
   .stage.s3.active{background:rgba(217,150,20,.18);border-color:var(--warn);color:#8a5d05}
@@ -316,17 +323,20 @@
   .besttime .bt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
   .besttime .bt-sub b{color:var(--text)}
   /* walkability timeline */
-  .tlwrap{margin-bottom:6px}
+  .tlwrap{margin-bottom:6px;position:relative}
   .tlhead{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px;
     display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:9px}
   .tllegend{display:flex;flex-wrap:wrap;gap:4px 10px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
   .tllegend span{display:inline-flex;align-items:center;gap:4px;font-size:11px}
   .timeline{display:flex;gap:clamp(3px,1vw,6px)}
-  .tl-cell{flex:1 1 0;min-width:0;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
-    padding:8px 2px 7px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
-  .tl-cell.best{border-color:var(--accent2);box-shadow:0 0 0 1px var(--accent2) inset;background:rgba(124,240,196,.10)}
+  .tl-cell{flex:1 1 0;min-width:0;border-radius:14px;
+    background:linear-gradient(180deg,#fffaf1,#fdf4e6);border:1px solid rgba(199,171,124,.32);
+    box-shadow:0 1px 2px rgba(122,96,50,.05);
+    padding:9px 2px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
+  .tl-cell.best{border-color:rgba(227,173,63,.85);box-shadow:0 0 0 2px rgba(227,173,63,.25);
+    background:linear-gradient(180deg,#fff8e7,#fdefd4)}
   .tl-time{font-size:clamp(9px,2.3vw,10.5px);color:var(--muted);font-weight:700;white-space:nowrap}
-  .tl-bar{width:7px;height:40px;background:#efe3cd;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
+  .tl-bar{width:8px;height:40px;background:#f0e7d6;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
   .tl-bar i{display:block;width:100%;border-radius:6px}
   .tl-em{font-size:clamp(11px,2.7vw,13px);line-height:1}
   .tl-temp{font-size:clamp(10px,2.5vw,12px);font-weight:700}
@@ -450,17 +460,27 @@
        from it, so the three stay optically matched here too. Sized so the whole
        line — mascot, plate, "for <name>" — still fits one row at 390px. */
     :root{--plateW:clamp(150px,44vw,196px)}
-    .stage{font-size:9.5px;padding:6px 2px}
-    .stage .se{font-size:14px}
+    /* 12 cells across a phone works out at ~28px each, which is unreadable and is
+       what makes this strip feel crowded. Scroll it instead at a comfortable width —
+       every hour is still there, you just swipe for the later ones. */
+    .timeline{gap:6px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+      padding:2px 2px 7px;margin:0 -2px;scrollbar-width:none}
+    .timeline::-webkit-scrollbar{display:none}
+    .tl-cell{flex:0 0 clamp(50px,14.5vw,62px);padding:9px 2px 8px;border-radius:13px;scroll-snap-align:start}
+    .tl-bar{height:36px}
+    /* soft fade on the right edge so it reads as scrollable rather than cut off */
+    .tlwrap::after{content:"";position:absolute;right:0;top:30px;bottom:9px;width:24px;pointer-events:none;
+      background:linear-gradient(90deg,rgba(255,255,255,0),var(--panel))}
+    .stages{gap:5px;margin:13px 0 2px}
+    .stage{padding:7px 2px;border-radius:10px}
+    .stage .se{font-size:13px}
+    .stage{font-size:9.5px}
     .header-loc button.act,.header-loc button.ghost{padding:10px 14px}
     .gscore .ring{width:60px;height:60px}
     .gscore .ring-in{width:47px;height:47px}
     .gscore .ring-in span{font-size:19px}
   }
   @media(max-width:420px){
-    .timeline{gap:3px}
-    .tl-cell{padding:7px 1px 6px;border-radius:8px}
-    .tl-bar{height:34px}
     .tl-time{font-size:9px}
     .factors{grid-template-columns:1fr 1fr}
   }
