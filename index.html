@@ -289,7 +289,7 @@
   .stage .se{font-size:14px;display:block;margin-bottom:2px}
   .stage.active{opacity:1;transform:translateY(-2px);box-shadow:0 2px 9px rgba(122,96,50,.12)}
   .stage.s1.active{background:rgba(46,158,79,.15);border-color:var(--good);color:#1d6b34}
-  .stage.s2.active{background:rgba(78,158,53,.15);border-color:#4e9e35;color:#356b23}
+  .stage.s2.active{background:rgba(227,180,40,.20);border-color:#e3b428;color:#8a6206}
   .stage.s3.active{background:rgba(217,150,20,.18);border-color:var(--warn);color:#8a5d05}
   .stage.s4.active{background:rgba(226,102,26,.15);border-color:#e2661a;color:#a2440d}
   .stage.s5.active{background:rgba(201,42,42,.13);border-color:var(--danger);color:#8f1d1d}
@@ -312,14 +312,16 @@
   .card.hero>h2{color:var(--accent2)}
   /* best-time headline banner */
   .besttime{display:flex;gap:14px;align-items:center;border-radius:14px;padding:15px 17px;margin-bottom:14px;
-    background:linear-gradient(100deg,rgba(124,240,196,.16),rgba(94,157,255,.08));border:1px solid rgba(124,240,196,.4)}
-  .besttime.lvl-ok{background:linear-gradient(100deg,rgba(250,204,21,.15),transparent);border-color:rgba(250,204,21,.4)}
-  .besttime.lvl-caution{background:linear-gradient(100deg,rgba(255,176,32,.16),transparent);border-color:rgba(255,176,32,.45)}
-  .besttime.lvl-risky,.besttime.lvl-danger{background:linear-gradient(100deg,rgba(255,92,108,.16),transparent);border-color:rgba(255,92,108,.5)}
+    background:linear-gradient(100deg,rgba(46,158,79,.10),rgba(255,255,255,0));border:1px solid rgba(46,158,79,.30)}
+  .besttime.lvl-clear{background:linear-gradient(100deg,rgba(46,158,79,.10),rgba(255,255,255,0));border-color:rgba(46,158,79,.30)}
+  .besttime.lvl-monitor,.besttime.lvl-ok{background:linear-gradient(100deg,rgba(227,180,40,.20),rgba(255,255,255,0));border-color:rgba(227,180,40,.55)}
+  .besttime.lvl-caution{background:linear-gradient(100deg,rgba(224,138,30,.17),rgba(255,255,255,0));border-color:rgba(224,138,30,.5)}
+  .besttime.lvl-risky,.besttime.lvl-danger{background:linear-gradient(100deg,rgba(201,42,42,.12),rgba(255,255,255,0));border-color:rgba(201,42,42,.42)}
   .besttime .bt-emoji{font-size:30px;line-height:1;flex:0 0 auto}
   .besttime .bt-main{font-size:clamp(15px,4.4vw,19px);font-weight:800;line-height:1.25}
   .besttime .bt-main b{color:var(--accent2)}
-  .besttime.lvl-caution .bt-main b,.besttime.lvl-risky .bt-main b,.besttime.lvl-danger .bt-main b{color:#ffd7a3}
+  .besttime.lvl-monitor .bt-main b{color:#8a6206}
+  .besttime.lvl-caution .bt-main b,.besttime.lvl-risky .bt-main b,.besttime.lvl-danger .bt-main b{color:#a2440d}
   .besttime .bt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
   .besttime .bt-sub b{color:var(--text)}
   /* walkability timeline */
@@ -1095,9 +1097,9 @@ function scoreCore(x,b){
 }
 function levelOf(s){
   if(s>=80)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#2e9e4f"};
-  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"Fine with a little care",color:"#4e9e35"};
-  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#d99614"};
-  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#e2661a"};
+  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"OK to walk — keep an eye on things",color:"#e3b428"};
+  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#e08a1e"};
+  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#dd5f1b"};
   return{lvl:"danger",stageN:5,emoji:"🛑",title:"DANGER",subtitle:"Better to stay indoors right now",color:"#c92a2a"};
 }
 function durationFor(s){
@@ -1143,12 +1145,18 @@ function pickWindow(hours){
   g.sort((a,z)=>z.peak.score-a.peak.score||(z.end.i-z.start.i)-(a.end.i-a.start.i));
   const w=g[0]; return{none:false,tier,start:w.start,end:w.end,peak:w.peak};
 }
-function renderOutlook(hours,name){
+function renderOutlook(hours,name,alerts){
+  alerts=alerts||{};
   const ni=nowIndex(), w=pickWindow(hours), dur=durationFor(w.peak.score);
   const endPlus=new Date(w.end.dt.getTime()+3600000);
   const endHr={dt:endPlus,isToday:w.end.isToday};
   const endLabel=hourLabel(endHr);
   const bt=$("bestTime"); bt.className="besttime lvl-"+w.peak.lvl.lvl;
+  /* "A great time to walk" is an all-clear statement, so it needs an all-clear to earn:
+     the window has to peak in the SAFE band AND nothing else may be flagged. A 61 with
+     118° pavement is walkable, but it is not great — that case gets the amber wording. */
+  const startsNow=w.start.i===ni;
+  const allClear=w.peak.score>=80 && !alerts.paveWarn && !alerts.paveHot;
   if(w.none){
     bt.innerHTML=`<div class="bt-emoji">🛑</div><div class="bt-txt">
       <div class="bt-main">No safe walking window ${hours.some(x=>!x.isToday)?"in sight":"left today"}</div>
@@ -1158,10 +1166,22 @@ function renderOutlook(hours,name){
       <div class="bt-main">Best window: <b>${hourLabel(w.start)}–${endLabel}</b></div>
       <div class="bt-sub">Not ideal today for ${name} — keep it to <b>${dur}</b> with shade &amp; water. Easiest around ${hourLabel(w.peak)}.</div></div>`;
   } else {
-    const lead=w.start.i===ni?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`;
-    bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
-      <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
-      <div class="bt-sub">Comfortable for a <b>${dur}</b> walk · the air feels around ${w.peak.feelsDisp}° then.</div></div>`;
+    if(allClear){
+      bt.className="besttime lvl-clear";
+      const lead=startsNow?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`;
+      bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
+        <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
+        <div class="bt-sub">Nothing to work around — comfortable for a <b>${dur}</b> walk · the air feels around ${w.peak.feelsDisp}° then.</div></div>`;
+    } else {
+      bt.className="besttime lvl-monitor";
+      const lead=startsNow?`OK to walk ${name} now — but keep an eye on things`:`Walkable window for ${name}:`;
+      const watch=alerts.paveWarn
+        ? `pavement is ≈ <b>${alerts.dispPave}°</b> in the sun, so stay on grass or in shade and check it with the 7-second test`
+        : `conditions are workable rather than ideal, so keep the pace easy`;
+      bt.innerHTML=`<div class="bt-emoji">🟡</div><div class="bt-txt">
+        <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
+        <div class="bt-sub">Fine for a <b>${dur}</b> walk with a little care — ${watch}. The air feels around ${w.peak.feelsDisp}° then.</div></div>`;
+    }
   }
   $("timeline").innerHTML=hours.map(hr=>{
     const best=!w.none&&hr.i>=w.start.i&&hr.i<=w.end.i;
@@ -1172,7 +1192,7 @@ function renderOutlook(hours,name){
       <div class="tl-temp">${hr.tempDisp}°</div></div>`;
   }).join("");
   $("tlTitle").textContent="Walkability · next 12 hours";
-  $("tlLegend").innerHTML=[["Safe","#2e9e4f"],["Good","#4e9e35"],["Caution","#d99614"],["Risky","#e2661a"],["Danger","#c92a2a"]]
+  $("tlLegend").innerHTML=[["Safe","#2e9e4f"],["Good","#e3b428"],["Caution","#e08a1e"],["Risky","#dd5f1b"],["Danger","#c92a2a"]]
     .map(([l,c])=>`<span><span class="dot" style="width:8px;height:8px;background:${c}"></span>${l}</span>`).join("");
 }
 
@@ -1198,7 +1218,10 @@ function computeDogIndex(){
   const {heatPen,coldPen,windPen,airPen,fatigue,pavePen}=core, score=core.score;
   // pavement paw-safety bands (researched): ~105°F warm · 115°F hot · 125°F+ burns pads in ~60s
   const dispPave=fToDisp(core.pavement), paveHot=core.pavement>=125, paveWarn=core.pavement>=115, paveNote=core.pavement>=105;
-  const L=levelOf(score), lvl=L.lvl;
+  /* 115°F+ asphalt is where pad burns start, so hot ground can't show as all-clear
+     even when the air score is high — cap the badge at GOOD and let the banner say why. */
+  const L0=levelOf(score);
+  const L=(paveWarn&&L0.stageN===1)?levelOf(70):L0, lvl=L.lvl;
 
   const g=$("dogGauge"); g.className="gauge lvl-"+lvl;
   const ring=$("dogRing"); ring.style.setProperty('--p',score); ring.style.setProperty('--c',L.color);
@@ -1208,7 +1231,7 @@ function computeDogIndex(){
   [...$("stages").children].forEach((el,i)=>el.classList.toggle("active",i===L.stageN-1));
 
   // rest-of-day outlook: best time to walk + hourly walkability
-  renderOutlook(buildOutlook(b), name);
+  renderOutlook(buildOutlook(b), name, {paveWarn,paveHot,dispPave});
 
   // walk guide: remember conditions; map refreshes on location load / duration change
   STATE.score=score; STATE.mapLevel=L; STATE.walkName=name;
