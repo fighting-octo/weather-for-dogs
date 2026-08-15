@@ -1137,54 +1137,73 @@ function buildOutlook(b){
   }
   return hours;
 }
-function pickWindow(hours){
-  const groups=mask=>{let res=[],cur=null;hours.forEach(hr=>{if(mask(hr.score)){if(!cur){cur={start:hr,end:hr,peak:hr};res.push(cur);}else{cur.end=hr;if(hr.score>cur.peak.score)cur.peak=hr;}}else cur=null;});return res;};
-  let g=groups(s=>s>=60),tier="good";
-  if(!g.length){g=groups(s=>s>=42);tier="caution";}
-  if(!g.length){const best=hours.reduce((a,z)=>z.score>a.score?z:a,hours[0]);return{none:true,tier:"none",start:best,end:best,peak:best};}
-  g.sort((a,z)=>z.peak.score-a.peak.score||(z.end.i-z.start.i)-(a.end.i-a.start.i));
-  const w=g[0]; return{none:false,tier,start:w.start,end:w.end,peak:w.peak};
+/* All the walkable stretches, not just one. Ranking a single window by peak score
+   hid the fact that a run can be happening right now and still lose to a slightly
+   better one later — so a morning of straight greens got passed over for the evening. */
+function pickWindows(hours){
+  const runs=mask=>{let res=[],cur=null;hours.forEach(hr=>{if(mask(hr.score)){if(!cur){cur={start:hr,end:hr,peak:hr};res.push(cur);}else{cur.end=hr;if(hr.score>cur.peak.score)cur.peak=hr;}}else cur=null;});return res;};
+  /* Prefer runs of straight SAFE hours. Only if the day never gets there do we widen
+     to GOOD, so "best time" means the genuinely clear hours rather than the merely
+     acceptable ones either side of them. */
+  let list=runs(s=>s>=80), tier="prime";
+  if(!list.length){ list=runs(s=>s>=60); tier="good"; }
+  if(!list.length){ list=runs(s=>s>=42); tier="caution"; }
+  if(!list.length){
+    const best=hours.reduce((a,z)=>z.score>a.score?z:a,hours[0]);
+    return {none:true,tier:"none",list:[],best:{start:best,end:best,peak:best}};
+  }
+  const usable=w=>(w.end.i-w.start.i+1)*100+w.peak.score;   // hours of daylight first, quality second
+  const ranked=[...list].sort((a,z)=>usable(z)-usable(a));
+  const show=ranked.slice(0,2).sort((a,z)=>a.start.i-z.start.i);   // read them in time order
+  return {none:false,tier,list:show,best:ranked[0]};
 }
 function renderOutlook(hours,name,alerts){
   alerts=alerts||{};
-  const ni=nowIndex(), w=pickWindow(hours), dur=durationFor(w.peak.score);
-  const endPlus=new Date(w.end.dt.getTime()+3600000);
-  const endHr={dt:endPlus,isToday:w.end.isToday};
-  const endLabel=hourLabel(endHr);
-  const bt=$("bestTime"); bt.className="besttime lvl-"+w.peak.lvl.lvl;
+  const ni=nowIndex(), W=pickWindows(hours), dur=durationFor(W.best.peak.score);
+  const spanOf=w=>{
+    const endPlus=new Date(w.end.dt.getTime()+3600000);
+    return (w.start.i===ni?"now":hourLabel(w.start))+"\u2013"+hourLabel({dt:endPlus,isToday:w.end.isToday});
+  };
+  const spans=W.list.map(w=>`<b>${spanOf(w)}</b>`).join(" and ");
+  const many=W.list.length>1, startsNow=W.list.length>0&&W.list[0].start.i===ni;
+  /* when the lead already says "now", "now-8 PM" repeats itself — say "until 8 PM" */
+  const soloNow=startsNow&&!many;
+  const spansLead=soloNow
+    ? `<b>until ${hourLabel({dt:new Date(W.list[0].end.dt.getTime()+3600000),isToday:W.list[0].end.isToday})}</b>`
+    : spans;
+  const bt=$("bestTime"); bt.className="besttime lvl-"+W.best.peak.lvl.lvl;
   /* "A great time to walk" is an all-clear statement, so it needs an all-clear to earn:
      the window has to peak in the SAFE band AND nothing else may be flagged. A 61 with
-     118° pavement is walkable, but it is not great — that case gets the amber wording. */
-  const startsNow=w.start.i===ni;
-  const allClear=w.peak.score>=80 && !alerts.paveWarn && !alerts.paveHot;
-  if(w.none){
+     118 degree pavement is walkable, but it is not great. */
+  const allClear=W.best.peak.score>=80 && !alerts.paveWarn && !alerts.paveHot;
+  if(W.none){
     bt.innerHTML=`<div class="bt-emoji">🛑</div><div class="bt-txt">
       <div class="bt-main">No safe walking window ${hours.some(x=>!x.isToday)?"in sight":"left today"}</div>
-      <div class="bt-sub">Conditions stay tough for ${name}. Best is around <b>${hourLabel(w.peak)}</b> (still ${w.peak.lvl.title.toLowerCase()}) — limit to a <b>${dur}</b> potty break.</div></div>`;
-  } else if(w.tier==="caution"){
+      <div class="bt-sub">Conditions stay tough for ${name}. Best is around <b>${hourLabel(W.best.peak)}</b> (still ${W.best.peak.lvl.title.toLowerCase()}) — limit to a <b>${dur}</b> potty break.</div></div>`;
+  } else if(W.tier==="caution"){
     bt.innerHTML=`<div class="bt-emoji">⚠️</div><div class="bt-txt">
-      <div class="bt-main">Best window: <b>${hourLabel(w.start)}–${endLabel}</b></div>
-      <div class="bt-sub">Not ideal today for ${name} — keep it to <b>${dur}</b> with shade &amp; water. Easiest around ${hourLabel(w.peak)}.</div></div>`;
+      <div class="bt-main">Best window${many?"s":""}: ${spans}</div>
+      <div class="bt-sub">Not ideal today for ${name} — keep it to <b>${dur}</b> with shade &amp; water. Easiest around ${hourLabel(W.best.peak)}.</div></div>`;
+  } else if(allClear){
+    bt.className="besttime lvl-clear";
+    const lead=many?`Best times to walk ${name}:`
+      :(startsNow?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`);
+    bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
+      <div class="bt-main">${lead} ${spansLead}</div>
+      <div class="bt-sub">Nothing to work around — comfortable for a <b>${dur}</b> walk · the air feels around ${W.best.peak.feelsDisp}° at ${hourLabel(W.best.peak)}.${many?" The hours in between run warmer.":""}</div></div>`;
   } else {
-    if(allClear){
-      bt.className="besttime lvl-clear";
-      const lead=startsNow?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`;
-      bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
-        <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
-        <div class="bt-sub">Nothing to work around — comfortable for a <b>${dur}</b> walk · the air feels around ${w.peak.feelsDisp}° then.</div></div>`;
-    } else {
-      bt.className="besttime lvl-monitor";
-      const lead=startsNow?`OK to walk ${name} now — but keep an eye on things`:`Walkable window for ${name}:`;
-      const watch=alerts.paveWarn
-        ? `pavement is ≈ <b>${alerts.dispPave}°</b> in the sun, so stay on grass or in shade and check it with the 7-second test`
-        : `conditions are workable rather than ideal, so keep the pace easy`;
-      bt.innerHTML=`<div class="bt-emoji">🟡</div><div class="bt-txt">
-        <div class="bt-main">${lead} <b>${hourLabel(w.start)}–${endLabel}</b></div>
-        <div class="bt-sub">Fine for a <b>${dur}</b> walk with a little care — ${watch}. The air feels around ${w.peak.feelsDisp}° then.</div></div>`;
-    }
+    bt.className="besttime lvl-monitor";
+    const lead=many?`Walkable windows for ${name}:`
+      :(startsNow?`OK to walk ${name} now — but keep an eye on things`:`Walkable window for ${name}:`);
+    const watch=alerts.paveWarn
+      ? `pavement is ≈ <b>${alerts.dispPave}°</b> in the sun, so stay on grass or in shade and check it with the 7-second test`
+      : `conditions are workable rather than ideal, so keep the pace easy`;
+    bt.innerHTML=`<div class="bt-emoji">🟡</div><div class="bt-txt">
+      <div class="bt-main">${lead} ${spansLead}</div>
+      <div class="bt-sub">Fine for a <b>${dur}</b> walk with a little care — ${watch}. The air feels around ${W.best.peak.feelsDisp}° at ${hourLabel(W.best.peak)}.</div></div>`;
   }
   $("timeline").innerHTML=hours.map(hr=>{
-    const best=!w.none&&hr.i>=w.start.i&&hr.i<=w.end.i;
+    const best=!W.none&&W.list.some(x=>hr.i>=x.start.i&&hr.i<=x.end.i);
     return `<div class="tl-cell ${best?'best':''}">
       <div class="tl-time">${hr.i===ni?'Now':tlShort(hr.dt)}</div>
       <div class="tl-bar"><i style="height:${Math.max(6,hr.score)}%;background:${hr.lvl.color}"></i></div>
