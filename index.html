@@ -1095,6 +1095,19 @@ function scoreCore(x,b){
   const total=heatPen+coldPen+windPen+airPen+fatigue*0.6+precipPen+pavePen;
   return {score:Math.max(0,Math.min(100,round(100-total))),heatPen,coldPen,windPen,airPen,fatigue,precipPen,pavePen,pavement};
 }
+/* The paw-safety card on screen publishes these bands, so every other surface has to
+   read from them or the app contradicts itself: the tile label used to come from
+   penalty/max, which called 118°F "Moderate" while the card called it "Hot". */
+function paveBand(f){
+  if(f>=125) return {key:"burn",label:"Burns", pct:100,color:"#c92a2a",
+    note:"hot enough to burn paw pads in about a minute"};
+  if(f>=115) return {key:"hot", label:"Hot",   pct:78, color:"#e08a1e",
+    note:"too hot for comfort — keep to grass or shade"};
+  if(f>105)  return {key:"warm",label:"Warm",  pct:45, color:"#e3b428",
+    note:"warm underfoot, so favour grass and shade"};
+  return {key:"ok",label:"Low",pct:Math.max(5,Math.round((f-60)/45*28)),color:"#2e9e4f",
+    note:"comfortable underfoot"};
+}
 function levelOf(s){
   if(s>=80)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#2e9e4f"};
   if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"OK to walk — keep an eye on things",color:"#e3b428"};
@@ -1236,7 +1249,8 @@ function computeDogIndex(){
   const core=scoreCore({feels,temp:tempF,hum,wind,gust,aqi,uv,pop,age:mods.age,build:mods.build},b);
   const {heatPen,coldPen,windPen,airPen,fatigue,pavePen}=core, score=core.score;
   // pavement paw-safety bands (researched): ~105°F warm · 115°F hot · 125°F+ burns pads in ~60s
-  const dispPave=fToDisp(core.pavement), paveHot=core.pavement>=125, paveWarn=core.pavement>=115, paveNote=core.pavement>=105;
+  const pb=paveBand(core.pavement), dispPave=fToDisp(core.pavement);
+  const paveHot=pb.key==="burn", paveWarn=pb.key==="hot"||pb.key==="burn", paveNote=pb.key!=="ok";
   /* 115°F+ asphalt is where pad burns start, so hot ground can't show as all-clear
      even when the air score is high — cap the badge at GOOD and let the banner say why. */
   const L0=levelOf(score);
@@ -1258,25 +1272,30 @@ function computeDogIndex(){
 
   // dominant concern
   const issues=[{k:"heat",v:heatPen},{k:"pave",v:pavePen},{k:"cold",v:coldPen},{k:"wind",v:windPen},{k:"air",v:airPen},{k:"fatigue",v:fatigue*0.6}].sort((a,z)=>z.v-a.v);
-  const top=issues[0]; let verdict;
+  const top=issues[0], second=issues[1];
+  const alsoName={heat:"heat",pave:"hot pavement",cold:"cold",wind:"wind",air:"air quality",fatigue:"humidity & UV"};
+  const also=(second&&second.v>=8&&top.v>=8)?` Also worth noting: <b>${alsoName[second.k]}</b>.`:"";
+  let verdict;
   if(score>=78) verdict=`Comfortable out there for ${name}. Enjoy the walk — bring water anyway.`;
-  else if(top.k==="pave") verdict=`Main concern for ${name}: <b>hot pavement</b> — asphalt ≈ ${dispPave}° in the sun can burn paw pads.`;
+  else if(top.k==="pave") verdict=`Main concern for ${name}: <b>${pb.key==="ok"?"ground temperature":"hot pavement"}</b> — asphalt ≈ ${dispPave}° in the sun, ${pb.note}.`;
   else if(top.k==="heat") verdict=`Main concern for ${name}: <b>heat</b> — the air feels like ${dispFeels}°, above this breed's comfort zone.`;
   else if(top.k==="cold") verdict=`Main concern for ${name}: <b>cold</b> — the air feels like ${dispFeels}°, chilly for this breed.`;
   else if(top.k==="wind") verdict=`Main concern for ${name}: <b>wind</b> — gusts to ${dispGust} ${spdU()}.`;
   else if(top.k==="air") verdict=`Main concern for ${name}: <b>air quality</b> — US AQI ${aqi}.`;
   else verdict=`Main concern for ${name}: <b>fatigue / exertion</b> — keep it short and shaded.`;
-  $("dogVerdict").innerHTML=verdict;
+  $("dogVerdict").innerHTML=verdict+(top.v>=8?also:"");
 
   // factor bars
-  const fac=(label,pen,max,val,color)=>{
-    const pct=Math.min(100,pen/max*100), load=pct<20?"Low":pct<50?"Moderate":pct<75?"High":"Severe";
+  const fac=(label,pen,max,val,color,band)=>{
+    const pct=band?band.pct:Math.min(100,pen/max*100);
+    const load=band?band.label:(pct<20?"Low":pct<50?"Moderate":pct<75?"High":"Severe");
+    if(band) color=band.color;
     return `<div class="factor"><div class="fl"><span>${label}</span><b>${load}</b></div>
       <div class="fv">${val}</div><div class="fbar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
   };
   $("dogFactors").innerHTML=
     fac("🌡️ Heat",heatPen,60,`Feels ${dispFeels}°`,"var(--danger)")+
-    fac("🔥 Pavement",pavePen,45,`feels ≈ ${dispPave}°`,"#ff7a3c")+
+    fac("🔥 Pavement",pavePen,45,`feels ≈ ${dispPave}°`,"#ff7a3c",pb)+
     fac("❄️ Cold",coldPen,60,`Feels ${dispFeels}°`,"var(--cold)")+
     fac("💨 Wind",windPen,35,`${dispWind} (g${dispGust}) ${spdU()}`,"var(--accent)")+
     fac("🌫️ Air quality",airPen,45,aqi!=null?`AQI ${aqi}`:"n/a","var(--warn)")+
@@ -1294,9 +1313,9 @@ function computeDogIndex(){
     recs.push(["","💧",`Bring water and take frequent breaks. Watch for heavy panting, drooling or lagging behind.`]);
     if(b.brachy) recs.push(["","🐽",`Flat‑faced breeds overheat fast — keep it very short and never leave in a car.`]);
   } else if(mildHeat){ recs.push(["","☀️",`A bit warm — favor shade, bring water, keep the pace easy.`]); }
-  if(paveHot) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — at 125°+ paw pads can burn in about 60 seconds. Stick to grass/shade or wait for cooler hours (7‑second back‑of‑hand test).`]);
-  else if(paveWarn) recs.push(["","🔥",`Pavement is hot (≈ <b>${dispPave}°</b>) — nearing the ~125° burn point. Keep to grass/shade and do the 7‑second hand test before walking on it.`]);
-  else if(paveNote) recs.push(["","🔥",`Pavement is warm (≈ <b>${dispPave}°</b>) — below the ~125° burn point, but paw pads still feel it, so favor grass and shade.`]);
+  if(paveHot) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Stay on grass or shade, or wait for cooler hours (7‑second back‑of‑hand test).`]);
+  else if(paveWarn) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. It is below the ~125° burn point but climbing, so do the 7‑second hand test before you set off.`]);
+  else if(paveNote) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Well below the ~125° burn point, but pads still feel it.`]);
   if(mildHeat||heavyHeat||paveWarn){
     if(mods.age==="senior") recs.push(["","🎂",`Senior dogs regulate heat poorly — keep it gentle, shaded and short, and watch closely for tiring.`]);
     else if(mods.age==="puppy") recs.push(["","🐾",`Puppies can't regulate temperature well yet — keep outings short and out of the midday sun.`]);
@@ -1322,7 +1341,7 @@ function computeDogIndex(){
   else if(lvl==="danger"||paveHot){wb.className="warnbanner show";
     // only name the pavement when it is actually the hazard, otherwise this is plain air heat
     wt.innerHTML=paveHot
-      ? `Too hot for ${name} — the air feels like <b>${dispFeels}°</b>, but pavement in the sun reaches ≈ <b>${dispPave}°</b>, hot enough to burn paws. Walk on grass or in shade, or wait for cooler hours.`
+      ? `Too hot for ${name} — the air feels like <b>${dispFeels}°</b>, but pavement in the sun reaches ≈ <b>${dispPave}°</b>, ${pb.note}. Walk on grass or in shade, or wait for cooler hours.`
       : `Too hot for ${name} — the air feels like <b>${dispFeels}°</b>. Walk on grass or in shade, or wait for cooler hours.`;}
   else if(heavyHeat||warmAir||paveWarn){wb.className="warnbanner show";wt.innerHTML=`Heat caution for ${name}: the air feels like <b>${dispFeels}°</b>${paveWarn?`, and pavement in the sun reaches ≈ <b>${dispPave}°</b>`:''}. Keep the walk short &amp; shaded, bring water, and check the pavement (7‑second test).`;}
   else{wb.className="warnbanner";}
