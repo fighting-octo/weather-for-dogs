@@ -23,6 +23,26 @@
     --warn:#d99614; --danger:#c92a2a; --good:#2e9e4f; --cold:#3b6ea5;
     --navy:#1b2a5e; --navyDeep:#141f45; --gold:#e3ad3f; --goldSoft:#f7e7c4;
     --radius:16px; --shadow:0 8px 22px rgba(27,42,94,.10);
+    /* ── BENTO ───────────────────────────────────────────────────────
+       Modules are the components and the grid is the rule: hierarchy comes
+       from module size and surface contrast, not from decoration. Two-step
+       shadow — a tight contact shadow plus a wide soft one — is what lifts a
+       white module off the cream ground without a heavy border. */
+    --mod:#ffffff; --modLine:#ece0cb; --modR:18px;
+    --modShadow:0 1px 2px rgba(27,42,94,.07), 0 10px 26px rgba(27,42,94,.07);
+    --heroBg:#16234e;                       /* deeper than --navy: the lit bands need the headroom */
+    --heroLine:rgba(247,231,196,.16);
+    --heroText:#f4ecdd; --heroMuted:rgba(244,236,221,.62);
+    /* ── WALKABILITY BANDS, two calibrated sets ───────────────────────
+       WCAG 1.4.11 wants 3:1 for a graphic that carries meaning, and the old
+       single set never got there on the cream ground (GOOD measured 1.76:1,
+       CAUTION 2.43:1 — the yellow simply vanished). Colour alone can't serve
+       both a cream page and a navy module, so there are two:
+         --bd-*   ink,  measured 3.8-5.5:1 on cream and on white
+         --bl-*   lit,  measured 6.0-9.7:1 on --heroBg
+       Every band also carries a label, so hue is never the only signal. */
+    --bd-safe:#1f8a45; --bd-good:#9a7611; --bd-caution:#b26a10; --bd-risky:#c9501a; --bd-danger:#be2626;
+    --bl-safe:#4ade80; --bl-good:#f2cb3d; --bl-caution:#f79b45; --bl-risky:#fc8a5f; --bl-danger:#ff8590;
     /* One knob drives the whole brand line. The tag plate's width sets the size of
        the engraving inside it, and "for <name>" is derived from the same value, so
        the three always read at the same optical size however the viewport changes.
@@ -263,89 +283,195 @@
   .warnbanner .wi{font-size:26px;animation:pulse 1.4s ease-in-out infinite}
   @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 
-  .gauge{border-radius:14px;padding:16px;border:1px solid var(--line);position:relative}
-  .gauge.lvl-good{background:linear-gradient(180deg,rgba(46,158,79,.10),rgba(255,255,255,0));border-color:rgba(46,158,79,.30)}
-  .gauge.lvl-ok{background:linear-gradient(180deg,rgba(78,158,53,.10),rgba(255,255,255,0));border-color:rgba(78,158,53,.28)}
-  .gauge.lvl-caution{background:linear-gradient(180deg,rgba(217,150,20,.12),rgba(255,255,255,0));border-color:rgba(217,150,20,.32)}
-  .gauge.lvl-risky{background:linear-gradient(180deg,rgba(226,102,26,.11),rgba(255,255,255,0));border-color:rgba(226,102,26,.32)}
-  .gauge.lvl-danger{background:linear-gradient(180deg,rgba(201,42,42,.10),rgba(255,255,255,0));border-color:rgba(201,42,42,.30)}
-  .gscore{display:flex;align-items:center;gap:14px}
-  .ring{width:68px;height:68px;border-radius:50%;flex:0 0 auto;
-    background:conic-gradient(var(--c,var(--accent2)) calc(var(--p,0)*1%), #ece1cc 0);
-    display:grid;place-items:center;box-shadow:0 2px 8px rgba(122,96,50,.16)}
-  .ring-in{width:53px;height:53px;border-radius:50%;background:var(--panel);display:grid;place-items:center}
-  .ring-in span{font-size:22px;font-weight:800;letter-spacing:-.5px}
-  .tt-wrap{min-width:0;flex:1}
-  .tt-title{font-size:18px;font-weight:800;line-height:1.15}
-  .tt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.4}
-
-  /* clear condition-stage scale */
-  .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:15px 0 4px}
-  /* inactive stages are quiet chips with no outline — only the current one carries
-     colour, which keeps the row calm instead of five competing boxes */
-  .stage{text-align:center;padding:8px 3px;border-radius:12px;font-size:10.5px;font-weight:700;
-    background:rgba(240,231,214,.5);border:1px solid transparent;color:var(--muted);opacity:.6;line-height:1.25;
-    transition:opacity .18s ease,transform .18s ease}
-  .stage .se{font-size:14px;display:block;margin-bottom:2px}
-  .stage.active{opacity:1;transform:translateY(-2px);box-shadow:0 2px 9px rgba(122,96,50,.12)}
-  .stage.s1.active{background:rgba(46,158,79,.15);border-color:var(--good);color:#1d6b34}
-  .stage.s2.active{background:rgba(227,180,40,.20);border-color:#e3b428;color:#8a6206}
-  .stage.s3.active{background:rgba(217,150,20,.18);border-color:var(--warn);color:#8a5d05}
-  .stage.s4.active{background:rgba(226,102,26,.15);border-color:#e2661a;color:#a2440d}
-  .stage.s5.active{background:rgba(201,42,42,.13);border-color:var(--danger);color:#8f1d1d}
-
-  .verdict{font-size:14px;margin-top:12px;line-height:1.5}
-  .factors{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-top:16px}
-  .factor{background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px 12px}
-  .factor .fl{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px;gap:6px}
-  .factor .fl b{color:var(--text)}
-  .factor .fv{font-size:13.5px;font-weight:600}
-  .factor .fbar{height:6px;background:#efe3cd;border-radius:6px;margin-top:8px;overflow:hidden}
-  .factor .fbar i{display:block;height:100%;border-radius:6px}
-  .recs{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+  /* The ring, the word, the coloured dot, the active chip and the number all
+     said the same thing in five places, and the band legend was printed twice.
+     The score is now stated once, in the NOW row of the hero, and the band
+     scale once, as the legend under the 12-hour band. */
+  .recs{display:flex;flex-direction:column;gap:8px}
   .rec{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);
     border-radius:11px;padding:11px 12px;font-size:13.5px;line-height:1.45}
   .rec.breed{border-color:rgba(124,240,196,.4);background:linear-gradient(90deg,rgba(124,240,196,.1),var(--panel2))}
   .rec .em{font-size:19px;line-height:1.3;flex:0 0 auto}
-  /* hero dog card */
-  .card.hero{border-color:rgba(124,240,196,.5);box-shadow:0 10px 40px rgba(0,0,0,.45),0 0 0 1px rgba(124,240,196,.15)}
-  .card.hero>h2{color:var(--accent2)}
-  /* best-time headline banner */
-  .besttime{display:flex;gap:14px;align-items:center;border-radius:14px;padding:15px 17px;margin-bottom:14px;
-    background:linear-gradient(100deg,rgba(46,158,79,.10),rgba(255,255,255,0));border:1px solid rgba(46,158,79,.30)}
-  .besttime.lvl-clear{background:linear-gradient(100deg,rgba(46,158,79,.10),rgba(255,255,255,0));border-color:rgba(46,158,79,.30)}
-  .besttime.lvl-monitor,.besttime.lvl-ok{background:linear-gradient(100deg,rgba(227,180,40,.20),rgba(255,255,255,0));border-color:rgba(227,180,40,.55)}
-  .besttime.lvl-caution{background:linear-gradient(100deg,rgba(224,138,30,.17),rgba(255,255,255,0));border-color:rgba(224,138,30,.5)}
-  .besttime.lvl-risky,.besttime.lvl-danger{background:linear-gradient(100deg,rgba(201,42,42,.12),rgba(255,255,255,0));border-color:rgba(201,42,42,.42)}
-  .besttime .bt-emoji{font-size:30px;line-height:1;flex:0 0 auto}
-  .besttime .bt-main{font-size:clamp(15px,4.4vw,19px);font-weight:800;line-height:1.25}
-  .besttime .bt-main b{color:var(--accent2)}
-  .besttime.lvl-monitor .bt-main b{color:#8a6206}
-  .besttime.lvl-caution .bt-main b,.besttime.lvl-risky .bt-main b,.besttime.lvl-danger .bt-main b{color:#a2440d}
-  .besttime .bt-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
-  .besttime .bt-sub b{color:var(--text)}
-  /* walkability timeline */
-  .tlwrap{margin-bottom:6px;position:relative}
-  .tlhead{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px;
-    display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-bottom:9px}
-  .tllegend{display:flex;flex-wrap:wrap;gap:4px 10px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--muted)}
-  .tllegend span{display:inline-flex;align-items:center;gap:4px;font-size:11px}
-  .timeline{display:flex;gap:clamp(3px,1vw,6px)}
-  .tl-cell{flex:1 1 0;min-width:0;border-radius:14px;
-    background:linear-gradient(180deg,#fffaf1,#fdf4e6);border:1px solid rgba(199,171,124,.32);
-    box-shadow:0 1px 2px rgba(122,96,50,.05);
-    padding:9px 2px 8px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:5px}
-  .tl-cell.best{border-color:rgba(227,173,63,.85);box-shadow:0 0 0 2px rgba(227,173,63,.25);
-    background:linear-gradient(180deg,#fff8e7,#fdefd4)}
-  .tl-time{font-size:clamp(9px,2.3vw,10.5px);color:var(--muted);font-weight:700;white-space:nowrap}
-  .tl-bar{width:8px;height:40px;background:#f0e7d6;border-radius:6px;display:flex;flex-direction:column-reverse;overflow:hidden}
-  .tl-bar i{display:block;width:100%;border-radius:6px}
-  .tl-em{font-size:clamp(11px,2.7vw,13px);line-height:1}
-  .tl-temp{font-size:clamp(10px,2.5vw,12px);font-weight:700}
-  .nowlbl{font-size:11.5px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.6px;margin:16px 0 8px;
-    display:flex;align-items:center;gap:8px}
-  .nowlbl::after{content:"";flex:1;height:1px;background:var(--line)}
-  .note{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5}
+  /* ══ HERO: recommendation first ═══════════════════════════════════
+     The question the app is opened for is WHEN, not how bad it is now. So the
+     next usable window is the headline, and the current state sits underneath
+     it. The surfaces are the tag's own materials — navy, brass, cream — because
+     the answer should look like it belongs to this app and not to a dashboard. */
+  .card.hero{padding:clamp(11px,2.8vw,16px)}
+  .card.hero>h2{color:var(--accent2);padding:2px 4px 0}
+  .card.hero>.hint,.card.hero>.greet{padding:0 4px}
+  .heromod{background:linear-gradient(180deg,#1d2d63,var(--heroBg));border-radius:var(--modR);
+    padding:clamp(14px,3.2vw,20px) clamp(14px,3.2vw,22px) clamp(15px,3.4vw,20px);
+    color:var(--heroText);text-align:center;position:relative;overflow:hidden}
+  .modlbl{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted)}
+  .heromod .modlbl{color:var(--gold)}
+  /* ── the brass plate ──────────────────────────────────────────────
+     Same gradient stops as the engraved tag in the header, so the headline
+     reads as the same object. Navy on brass measures 7.4:1. */
+  .rec-plate{position:relative;margin:10px auto 0;max-width:520px;
+    background:linear-gradient(180deg,#fdf0b8 0%,#f6d982 10%,#e7b94e 48%,#cf9f37 82%,#a87c26 100%);
+    border:2px solid #8a6420;border-radius:clamp(14px,3.4vw,20px);
+    padding:clamp(11px,2.8vw,16px) clamp(30px,7vw,44px);
+    box-shadow:0 6px 18px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.62)}
+  .rec-when{display:block;color:#16234e;font-weight:800;letter-spacing:-.4px;line-height:1.12;
+    font-size:clamp(19px,5.4vw,31px);overflow-wrap:anywhere}
+  .rec-rivet{position:absolute;top:50%;transform:translateY(-50%);width:6px;height:6px;border-radius:50%;
+    background:#a87c26;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
+  .rec-rivet.l{left:clamp(11px,2.6vw,16px)} .rec-rivet.r{right:clamp(11px,2.6vw,16px)}
+  .rec-delta{font-size:12px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+    color:var(--gold);margin-top:9px;font-variant-numeric:tabular-nums}
+  .rec-delta:empty{display:none}
+  .rec-why{font-size:13px;color:var(--heroMuted);margin-top:8px;line-height:1.5;
+    max-width:60ch;margin-left:auto;margin-right:auto}
+  .rec-why b{color:var(--heroText);font-weight:700}
+
+  /* ── the 12-hour card ─────────────────────────────────────────────
+     Tubes on a fixed 0-100 track: bar height means walkability. The old strip
+     plotted temperature, where five neighbouring hours differed by about a
+     point of height and the scale could not be read at all. */
+  .walkcard{background:var(--panel2);border:1px solid var(--line);border-radius:var(--modR);
+    padding:clamp(12px,2.8vw,16px);margin-top:10px}
+  .b12-bars{display:flex;gap:clamp(3px,1vw,7px);align-items:flex-end;margin-top:10px;
+    height:clamp(96px,17vw,132px)}
+  .b12-col{flex:1 1 0;min-width:0;height:100%}
+  .b12-track{height:100%;border-radius:clamp(7px,1.8vw,10px);background:#f2e7d3;
+    border:1px solid rgba(199,171,124,.5);display:flex;flex-direction:column-reverse;
+    padding:3px;overflow:hidden}
+  /* the recommended stretch lifts its own track rather than recolouring the
+     tubes — the tubes still have to say what the score is */
+  .b12-track.win{background:#fdf3dc;border-color:rgba(227,173,63,.9);
+    box-shadow:0 0 0 1px rgba(227,173,63,.3)}
+  /* The gloss is a highlight layered OVER the fill, and it costs the middle of
+     the tube contrast. The thick edge in the band's own hue (9.1-11.5:1 on this
+     card) takes over the delineation, so the tube stays readable regardless. */
+  .b12-fill{width:100%;border-radius:clamp(5px,1.4vw,8px);border:1.5px solid;min-height:9px;
+    background-image:linear-gradient(180deg,rgba(255,255,255,.34),rgba(255,255,255,0) 46%)}
+  .b12-axis{display:flex;gap:clamp(3px,1vw,7px);margin-top:8px}
+  /* Labels sit on every second hour and are allowed to spill past their own
+     column: at 12 columns a phone gives each one ~28px, but only every other
+     one is printed, so each label really has ~56px and nothing collides. */
+  .b12-tick{flex:1 1 0;min-width:0;text-align:center;font-size:clamp(9.5px,2.3vw,11px);font-weight:700;
+    color:var(--muted);white-space:nowrap;overflow:visible;font-variant-numeric:tabular-nums}
+  .b12-tick.on{color:var(--accent2);font-weight:800}
+  .b12-winpill{display:flex;align-items:center;justify-content:center;gap:7px;
+    width:max-content;max-width:100%;margin:11px auto 0;
+    background:linear-gradient(180deg,#2f7d47,#1f6236);border:1.5px solid #0e4f26;color:#f2fbf4;
+    border-radius:999px;padding:8px 15px;font-size:clamp(10px,2.5vw,11.5px);font-weight:800;
+    letter-spacing:.9px;text-transform:uppercase;text-align:center;line-height:1.3;
+    box-shadow:0 3px 10px rgba(14,79,38,.24),inset 0 1px 0 rgba(255,255,255,.22)}
+  .b12-winpill[hidden]{display:none}
+  .b12-winpill svg{width:12px;height:12px;flex:0 0 auto}
+  /* the band scale, printed exactly once on the whole screen */
+  .b12-legend{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(4px,1.2vw,7px);margin-top:11px}
+  .b12-chip{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    background:var(--panel);border:1.5px solid;border-radius:11px;padding:7px 2px;
+    font-size:clamp(8.5px,2.1vw,10px);font-weight:800;letter-spacing:.4px;line-height:1;
+    min-width:0;overflow:hidden}
+  .b12-chip .bci{width:13px;height:13px;flex:0 0 auto}
+  .b12-chip.on{color:#fff8ea !important;box-shadow:0 3px 10px rgba(122,96,50,.22)}
+
+  /* ── the now card ─────────────────────────────────────────────────
+     Demoted from the headline to a row: the score, the band it falls in, and
+     the two readings that produced it. */
+  .nowcard{display:flex;align-items:center;gap:clamp(11px,2.6vw,16px);margin-top:10px;
+    background:var(--panel);border:1px solid var(--line);border-radius:var(--modR);
+    padding:clamp(11px,2.6vw,15px);box-shadow:var(--modShadow)}
+  .now-badge{flex:0 0 auto;width:clamp(52px,13vw,64px);height:clamp(52px,13vw,64px);border-radius:50%;
+    display:grid;place-items:center;border:2px solid;color:#fff8ea;
+    box-shadow:inset 0 2px 0 rgba(255,255,255,.22),0 3px 10px rgba(122,96,50,.2)}
+  .now-badge b{font-size:clamp(21px,5.2vw,26px);font-weight:800;letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums}
+  .now-body{min-width:0;flex:1}
+  .now-kicker{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px}
+  /* Pavement gets a chip of its own. It is the reading that decides whether
+     paws get burned, it differs from air temperature by 40-60°, and it is the
+     one number an ordinary forecast will not tell you. */
+  .pave-chip{display:inline-flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:5px;
+    border:1.5px solid;border-radius:11px;padding:5px 11px 6px;background:var(--panel2)}
+  .pave-chip .pc-lbl{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+  .pave-chip b{font-size:clamp(19px,4.6vw,24px);font-weight:800;letter-spacing:-.5px;line-height:1.05;
+    font-variant-numeric:tabular-nums}
+  .pave-chip .pc-band{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.7px}
+  .now-feels{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.45}
+  .now-feels b{color:var(--text);font-weight:700;font-variant-numeric:tabular-nums}
+
+  /* ── the limiting strip ───────────────────────────────────────────
+     One line, because there is only ever one limiting factor to name. */
+  .limstrip{display:flex;align-items:center;gap:10px;margin-top:10px;
+    background:var(--panel2);border:1px solid var(--line);border-radius:13px;
+    padding:10px 13px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .limstrip[hidden]{display:none}
+  .limstrip b{color:var(--text);font-weight:800}
+  .limstrip .ls-i{flex:0 0 auto;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;
+    color:#fff8ea}
+  .limstrip .ls-i svg{width:13px;height:13px}
+
+  /* ══ BENTO GRID: how the score was reached ════════════════════════
+     Module size IS the hierarchy. The limiting factor gets the wide module
+     because it alone decided the score; the runner-up gets a narrow one;
+     everything that contributed nothing shares a single quiet module and is
+     labelled with a word rather than a number, so no reader has to compare
+     six values to find out which one mattered. */
+  .bento{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:12px}
+  .mod{background:var(--mod);border:1px solid var(--modLine);border-radius:var(--modR);
+    box-shadow:var(--modShadow);padding:clamp(13px,2.6vw,16px)}
+  .mod.lim{grid-column:span 4}
+  .mod.sec{grid-column:span 2;display:flex;flex-direction:column}
+  /* the breed box carries real content now, so it takes half a row rather
+     than sitting as a narrow column of dead space beside a taller neighbour */
+  .mod.prof{grid-column:span 3}
+  .mod.oth{grid-column:span 3}
+  .mod.recs{grid-column:span 6}
+  @media(max-width:820px){
+    .bento{grid-template-columns:repeat(2,1fr)}
+    .mod.lim,.mod.oth,.mod.recs{grid-column:span 2}
+    .mod.sec,.mod.prof{grid-column:span 1}
+  }
+  @media(max-width:520px){
+    .bento{grid-template-columns:1fr}
+    .mod.lim,.mod.sec,.mod.prof,.mod.oth,.mod.recs{grid-column:span 1}
+  }
+  .mod-hd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:9px}
+  /* the contribution is the point of these modules, so it is set as a figure,
+     not as a caption: same weight as the value it explains */
+  .mod-pen{font-size:clamp(19px,3.6vw,25px);font-weight:800;line-height:1;letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums;flex:0 0 auto}
+  .mod-name{font-size:14.5px;font-weight:800;line-height:1.25;min-width:0}
+  .mod-sub{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .mod-val{font-size:clamp(20px,4vw,26px);font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;
+    margin-top:2px;line-height:1.1}
+  .mod-val em{font-style:normal;font-size:13px;font-weight:700;color:var(--muted);margin-left:5px}
+  /* threshold scale: shows the reading against the limit it crossed, so
+     "−48" is traceable to a number a reader can check outside on the ground */
+  .lim-scale{margin-top:12px}
+  .lim-track{height:9px;border-radius:5px;background:#f0e7d6;position:relative;overflow:hidden}
+  .lim-track i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+  .lim-mark{position:absolute;top:-3px;bottom:-3px;width:2.5px;background:var(--text);border-radius:2px}
+  .lim-ends{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-top:6px;font-weight:700}
+  .lim-limit{font-size:11px;color:var(--muted);font-weight:700;text-align:center;margin-top:5px}
+  .lim-limit b{color:var(--text)}
+  /* other factors: a word, not a number */
+  .oth-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:9px 0;border-top:1px solid var(--line);font-size:13px}
+  .oth-row:first-of-type{border-top:none;padding-top:2px}
+  .oth-row .on{font-weight:700;flex:0 0 auto}
+  .oth-row .ov{color:var(--muted);font-size:12px;min-width:0;text-align:right;margin-left:auto}
+  .oth-row .ow{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);
+    flex:0 0 auto;white-space:nowrap}
+  /* the two thresholds that actually move with the breed. They replaced a
+     "×1.1" badge that looked like a coefficient but was never used by the
+     scorer — and whose implied ratio was wrong anyway, since the model shifts
+     a threshold rather than multiplying a penalty. */
+  .prof-lims{margin:11px 0 12px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .pl-row{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;padding:9px 0}
+  .pl-row+.pl-row{border-top:1px solid var(--line)}
+  .pl-k{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)}
+  .pl-row b{font-size:clamp(18px,3.6vw,22px);font-weight:800;letter-spacing:-.5px;line-height:1;
+    font-variant-numeric:tabular-nums;color:var(--accent2)}
+  .pl-d{font-size:11.5px;color:var(--muted);margin-left:auto;text-align:right;min-width:0}
+  .mod.prof .recs{gap:7px}
+  .mod.prof .rec{font-size:12.5px;padding:9px 11px}
+  .note{color:var(--muted);font-size:11.5px;margin-top:12px;line-height:1.5;padding:0 4px}
   /* researched pavement paw-safety reference */
   .pave-guide{margin-top:16px;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 13px}
   .pg-title{font-size:11.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
@@ -353,9 +479,11 @@
   .pg-band{display:flex;flex-direction:column;gap:2px;font-size:10.5px;color:var(--muted);
     border-radius:9px;padding:8px 9px;border:1px solid var(--line);line-height:1.25}
   .pg-band b{font-size:11.5px;color:var(--text);font-weight:800}
-  .pg-band.s1{background:rgba(74,222,128,.12);border-color:rgba(74,222,128,.35)}
-  .pg-band.s3{background:rgba(255,176,32,.12);border-color:rgba(255,176,32,.4)}
-  .pg-band.s5{background:rgba(255,92,108,.13);border-color:rgba(255,92,108,.45)}
+  /* same three bands the score reads from, in the same ink palette as the
+     legend — a band that looks different here would read as a different rule */
+  .pg-band.s1{background:rgba(31,138,69,.10);border-color:var(--bd-safe)}
+  .pg-band.s3{background:rgba(178,106,16,.10);border-color:var(--bd-caution)}
+  .pg-band.s5{background:rgba(190,38,38,.09);border-color:var(--bd-danger)}
   .pg-foot{font-size:11px;color:var(--muted);margin-top:9px;line-height:1.5}
   .pg-foot b{color:var(--text)}
   @media(max-width:520px){.pg-bands{grid-template-columns:1fr}}
@@ -462,29 +590,49 @@
        from it, so the three stay optically matched here too. Sized so the whole
        line — mascot, plate, "for <name>" — still fits one row at 390px. */
     :root{--plateW:clamp(150px,44vw,196px)}
-    /* 12 cells across a phone works out at ~28px each, which is unreadable and is
-       what makes this strip feel crowded. Scroll it instead at a comfortable width —
-       every hour is still there, you just swipe for the later ones. */
-    .timeline{gap:6px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
-      padding:2px 2px 7px;margin:0 -2px;scrollbar-width:none}
-    .timeline::-webkit-scrollbar{display:none}
-    .tl-cell{flex:0 0 clamp(50px,14.5vw,62px);padding:9px 2px 8px;border-radius:13px;scroll-snap-align:start}
-    .tl-bar{height:36px}
-    /* soft fade on the right edge so it reads as scrollable rather than cut off */
-    .tlwrap::after{content:"";position:absolute;right:0;top:30px;bottom:9px;width:24px;pointer-events:none;
-      background:linear-gradient(90deg,rgba(255,255,255,0),var(--panel))}
-    .stages{gap:5px;margin:13px 0 2px}
-    .stage{padding:7px 2px;border-radius:10px}
-    .stage .se{font-size:13px}
-    .stage{font-size:9.5px}
     .header-loc button.act,.header-loc button.ghost{padding:10px 14px}
-    .gscore .ring{width:60px;height:60px}
-    .gscore .ring-in{width:47px;height:47px}
-    .gscore .ring-in span{font-size:19px}
+    /* A phone gives 12 tubes ~26px each. Height is the signal and it survives
+       that, so the tubes stay — they just get taller to keep the differences
+       between neighbouring hours readable in a narrower column. */
+    .b12-bars{height:118px;gap:4px}
+    .b12-axis{gap:4px}
+    .b12-track{padding:2.5px}
+    /* the chips are the one row that genuinely runs out of width: drop the
+       tracking and let the word take two lines rather than shrinking it away */
+    .b12-chip{padding:7px 1px;letter-spacing:0;text-align:center}
+    .nowcard{gap:12px}
+    /* the pavement figure keeps its size on a phone — it is the reading the
+       screen exists to deliver, so it is the last thing that should shrink */
+    .pave-chip{padding:5px 9px 6px;gap:6px}
+    /* the comparison wraps to its own line here, and a right-aligned line of
+       its own reads as stranded — put it under the figure it qualifies */
+    .pl-d{margin-left:0;text-align:left;flex:1 1 100%}
+    .pl-row{gap:4px 9px;padding:10px 0}
+    /* age and build are two-word choices; side by side they cost one row
+       instead of two and still clear the 44px touch target */
+    .doginputs{gap:10px;padding:11px}
+    .doginputs .fld{flex:1 1 100%}
+    .doginputs .fld.half{flex:1 1 calc(50% - 5px)}
+    /* Three columns will not fit: "≈ 80° in the sun" was breaking over three
+       lines and dragging the row height with it. The verdict is what the row
+       is FOR, so it stays beside the name; the reading drops underneath. */
+    .oth-row{flex-wrap:wrap;gap:2px 10px}
+    .oth-row .on{flex:1 1 auto;order:1}
+    .oth-row .ow{order:2;margin-left:auto}
+    .oth-row .ov{order:3;flex:1 1 100%;text-align:left;margin-left:0}
   }
-  @media(max-width:420px){
-    .tl-time{font-size:9px}
-    .factors{grid-template-columns:1fr 1fr}
+  @media(max-width:430px){
+    /* the label wraps to two lines rather than being abbreviated away: an
+       initial is not a label, and colour must not become the only cue */
+    .b12-chip{font-size:8px;line-height:1.15;border-radius:9px}
+    .b12-chip .bci{width:11px;height:11px}
+    .b12-legend{gap:3px}
+    /* stack the now card so neither the badge nor the pavement chip is squeezed */
+    .nowcard{align-items:flex-start}
+  }
+  @media(max-width:360px){
+    .b12-bars{height:104px}
+    .rec-plate{padding-left:22px;padding-right:22px}
   }
 </style>
 </head>
@@ -609,36 +757,65 @@
   <!-- DOG WALK & PLAY INDEX — the prominent catch, right under the header -->
   <div class="card hero" id="dogCard">
     <h2>🐾 Doggie Walk &amp; Play Index</h2>
-    <div class="hint">When is the best time to walk or play outside today — and for how long? We weigh temperature, wind, air quality and fatigue for your dog's breed, hour by hour.</div>
+    <div class="hint">When should you head out today — and for how long? We score every hour for your dog's breed, then name the one thing holding that score back.</div>
     <div class="greet" id="greet" style="display:none"></div>
     <div class="warnbanner" id="warnBanner"><span class="wi">⚠️</span><span id="warnText"></span></div>
 
-    <!-- HERO: best time to walk + rest-of-day outlook -->
-    <div class="besttime" id="bestTime"></div>
-    <div class="tlwrap">
-      <div class="tlhead"><span id="tlTitle">Rest‑of‑day walkability</span><span class="tllegend" id="tlLegend"></span></div>
-      <div class="timeline" id="timeline"></div>
+    <!-- ══ HERO ═══════════════════════════════════════════════════════
+         Four stacked surfaces, each answering one question:
+           navy block  — when should we go?
+           cream card  — what does the whole day look like?
+           now card    — what would we be walking into right this minute?
+           strip       — what single thing is holding it back?
+         Same reading order on a phone as on a desktop; only the widths move. -->
+    <div class="heromod" id="heroMod">
+      <div class="modlbl" id="recLbl">Recommendation</div>
+      <!-- the engraved brass plate from the tag, reused as the headline: it is
+           the one element on the page that is always the answer -->
+      <div class="rec-plate">
+        <span class="rec-rivet l" aria-hidden="true"></span>
+        <span class="rec-when" id="recWhen">—</span>
+        <span class="rec-rivet r" aria-hidden="true"></span>
+      </div>
+      <div class="rec-delta" id="recDelta"></div>
+      <div class="rec-why" id="recWhy">Enter a location to begin.</div>
     </div>
 
-    <div class="nowlbl">Right now</div>
-    <div class="gauge" id="dogGauge">
-      <div class="gscore">
-        <div class="ring" id="dogRing"><div class="ring-in"><span id="dogNum">—</span></div></div>
-        <div class="tt-wrap">
-          <div class="tt-title" id="dogTitle">—</div>
-          <div class="tt-sub" id="dogTitleSub">Enter a location to begin</div>
-        </div>
+    <div class="walkcard">
+      <div class="modlbl" id="b12Title">Walkability · 12 h</div>
+      <!-- Each tube is its own 0-100 track, so the unfilled part above a fill
+           already shows how far that hour is from a perfect one. Threshold
+           gridlines on top of that were a second scale saying the same thing. -->
+      <div class="b12-bars" id="b12Bars"></div>
+      <div class="b12-axis" id="b12Axis"></div>
+      <div class="b12-winpill" id="b12Win" hidden></div>
+      <div class="b12-legend" id="b12Legend"></div>
+    </div>
+
+    <div class="nowcard" id="nowCard">
+      <span class="now-badge" id="nowBadge"><b id="dogNum">—</b></span>
+      <div class="now-body">
+        <div class="now-kicker" id="nowKicker">Now</div>
+        <!-- Pavement is the reading that decides whether paws get burned, and
+             it is the one number a forecast app does not otherwise give you.
+             It gets the chip; air temperature sits under it as context. -->
+        <div class="pave-chip" id="paveChip"></div>
+        <div class="now-feels" id="nowFeels"></div>
       </div>
-      <div class="stages" id="stages">
-        <div class="stage s1"><span class="se">🟢</span>Safe</div>
-        <div class="stage s2"><span class="se">🟡</span>Good</div>
-        <div class="stage s3"><span class="se">🟠</span>Caution</div>
-        <div class="stage s4"><span class="se">🔴</span>Risky</div>
-        <div class="stage s5"><span class="se">🛑</span>Danger</div>
+    </div>
+
+    <div class="limstrip" id="limStrip" hidden></div>
+
+    <!-- BENTO — how that score was reached -->
+    <div class="bento" id="bento">
+      <div class="mod lim" id="modLim"></div>
+      <div class="mod sec" id="modSec"></div>
+      <div class="mod prof" id="modProf"></div>
+      <div class="mod oth" id="modOth"></div>
+      <div class="mod recs" id="modRecs">
+        <div class="modlbl">What to do — anyone's dog</div>
+        <div class="recs" id="dogRecs"></div>
       </div>
-      <div class="verdict" id="dogVerdict"></div>
-      <div class="factors" id="dogFactors"></div>
-      <div class="recs" id="dogRecs"></div>
     </div>
     <div class="pave-guide" id="paveGuide">
       <div class="pg-title">🔥 Pavement paw‑safety guide</div>
@@ -664,7 +841,7 @@
       <label for="breed">🦴 Breed</label>
       <select id="breed"></select>
     </div>
-    <div class="fld">
+    <div class="fld half">
       <label for="dogAge">🎂 Age</label>
       <select id="dogAge">
         <option value="adult">Adult</option>
@@ -672,7 +849,7 @@
         <option value="senior">Senior</option>
       </select>
     </div>
-    <div class="fld">
+    <div class="fld half">
       <label for="dogBuild">⚖️ Build</label>
       <select id="dogBuild">
         <option value="average">Average</option>
@@ -1092,28 +1269,77 @@ function scoreCore(x,b){
   const paveRise=Math.max(0,Math.min(60,uv*6));
   const pavement=temp+paveRise;
   let pavePen=0; if(pavement>=105)pavePen=Math.min(48,(pavement-105)*1.3);  // warm from ~105°F, burn risk ~125°F+
-  const total=heatPen+coldPen+windPen+airPen+fatigue*0.6+precipPen+pavePen;
-  return {score:Math.max(0,Math.min(100,round(100-total))),heatPen,coldPen,windPen,airPen,fatigue,precipPen,pavePen,pavement};
+  /* ── AGGREGATION: largest deduction in full, second-largest at a third ──
+     Deliberately not a sum and deliberately not a mean.
+
+     A sum double-counts, because these penalties are not independent: one hot
+     sunny afternoon drives heatPen, pavePen and fatigue at the same time, and
+     adding all three punished the dog three times for the same sun. A mean has
+     the opposite fault — it lets four quiet factors dilute one disqualifying
+     one, so 125°F asphalt gets averaged away against clean air and light wind.
+
+     Max + a third of the runner-up keeps the worst thing intact while still
+     admitting that a second problem makes a day harder. It also gives the
+     screen something a sum never could: there is always exactly ONE limiting
+     factor, and the two numbers shown add up to the deduction, so the score is
+     explainable as 100 − (48 + 11) = 41 rather than asserted. Both parts are
+     rounded before subtracting so that arithmetic holds on screen exactly. */
+  const parts=[{k:"heat",pen:heatPen},{k:"pave",pen:pavePen},{k:"cold",pen:coldPen},{k:"wind",pen:windPen},
+    {k:"air",pen:airPen},{k:"load",pen:fatigue*0.6},{k:"precip",pen:precipPen}].sort((a,z)=>z.pen-a.pen);
+  const lead=parts[0], second=parts[1];
+  const dLead=round(Math.min(100,lead.pen)), dSecond=round(second.pen/3);
+  const score=Math.max(0,Math.min(100,100-dLead-dSecond));
+  return {score,parts,lead,second,dLead,dSecond,heatStart,coldThresh,
+    heatPen,coldPen,windPen,airPen,fatigue,precipPen,pavePen,pavement};
 }
 /* The paw-safety card on screen publishes these bands, so every other surface has to
    read from them or the app contradicts itself: the tile label used to come from
    penalty/max, which called 118°F "Moderate" while the card called it "Hot". */
+/* Bands borrow the walkability palette rather than carrying colours of their
+   own, so the pavement chip beside the score is tinted on the same scale as the
+   bars above it — a reading that looks like CAUTION is CAUTION everywhere. */
 function paveBand(f){
-  if(f>=125) return {key:"burn",label:"Burns", pct:100,color:"#c92a2a",
+  const B=n=>BANDS[n];
+  if(f>=125) return {key:"burn",label:"Burns", pct:100,color:B(4).ink,ink:B(4).ink,rim:B(4).rim,
     note:"hot enough to burn paw pads in about a minute"};
-  if(f>=115) return {key:"hot", label:"Hot",   pct:78, color:"#e08a1e",
+  if(f>=115) return {key:"hot", label:"Hot",   pct:78, color:B(2).ink,ink:B(2).ink,rim:B(2).rim,
     note:"too hot for comfort — keep to grass or shade"};
-  if(f>105)  return {key:"warm",label:"Warm",  pct:45, color:"#e3b428",
+  if(f>105)  return {key:"warm",label:"Warm",  pct:45, color:B(1).ink,ink:B(1).ink,rim:B(1).rim,
     note:"warm underfoot, so favour grass and shade"};
-  return {key:"ok",label:"Low",pct:Math.max(5,Math.round((f-60)/45*28)),color:"#2e9e4f",
+  return {key:"ok",label:"Comfortable",pct:Math.max(5,Math.round((f-60)/45*28)),color:B(0).ink,ink:B(0).ink,rim:B(0).rim,
     note:"comfortable underfoot"};
 }
+/* Each band carries three colours, not one. A single set cannot serve the cream
+   card, the navy block and a glossy fill at once: measured against those grounds
+   the old greens and yellows fell to 1.76-2.43:1, under the 3:1 WCAG 1.4.11 asks
+   of a graphic that carries meaning.
+     ink  fill on light surfaces      3.8-5.5:1 on cream and on white
+     lit  fill on the navy block      6.0-9.7:1 on --heroBg
+     rim  the thick dark edge, in the band's OWN hue, 9.1-11.5:1 on the cream
+          card. A gloss highlight lifts the middle of a fill and costs it
+          contrast, so the edge — not the fill — does the delineating, and it
+          doubles as the label colour, where 4.5:1 for text is comfortably met.
+   Bands are always labelled as well, so colour is never the only cue.
+   `icon` is drawn as SVG rather than set as an emoji: the glyphs that read
+   correctly here (⚠ vs ✕) are exactly the ones fonts substitute unpredictably. */
+const BAND_ICON={
+  check:'<path d="M3 7.2 6 10.2 11 3.8"/>',
+  warn :'<path d="M7 1.8 13 12.2H1z"/><path d="M7 5.6v3"/><path d="M7 10.3h.01"/>',
+  bang :'<circle cx="7" cy="7" r="5.6"/><path d="M7 4.1v3.4"/><path d="M7 9.7h.01"/>',
+  cross:'<circle cx="7" cy="7" r="5.6"/><path d="m5 5 4 4M9 5l-4 4"/>'
+};
+const BANDS=[
+  {min:80,lvl:"good",   stageN:1,icon:"check",title:"SAFE",   subtitle:"Great conditions for a walk",     ink:"#1f8a45",lit:"#4ade80",rim:"#0e4f26"},
+  {min:60,lvl:"ok",     stageN:2,icon:"check",title:"GOOD",   subtitle:"OK to walk — keep an eye on things",ink:"#9a7611",lit:"#f2cb3d",rim:"#4a3606"},
+  {min:42,lvl:"caution",stageN:3,icon:"warn", title:"CAUTION",subtitle:"Take precautions & keep it easy",  ink:"#b26a10",lit:"#f79b45",rim:"#5a3208"},
+  {min:25,lvl:"risky",  stageN:4,icon:"bang", title:"RISKY",  subtitle:"Short outings only",              ink:"#c9501a",lit:"#fc8a5f",rim:"#61240a"},
+  {min:0,  lvl:"danger",stageN:5,icon:"cross",title:"DANGER", subtitle:"Better to stay indoors right now", ink:"#be2626",lit:"#ff8590",rim:"#6b1111"}
+];
+const bandSvg=k=>`<svg class="bci" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.9"
+  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${BAND_ICON[k]}</svg>`;
 function levelOf(s){
-  if(s>=80)return{lvl:"good",stageN:1,emoji:"🟢",title:"SAFE",subtitle:"Great conditions for a walk",color:"#2e9e4f"};
-  if(s>=60)return{lvl:"ok",stageN:2,emoji:"🟡",title:"GOOD",subtitle:"OK to walk — keep an eye on things",color:"#e3b428"};
-  if(s>=42)return{lvl:"caution",stageN:3,emoji:"🟠",title:"CAUTION",subtitle:"Take precautions & keep it easy",color:"#e08a1e"};
-  if(s>=25)return{lvl:"risky",stageN:4,emoji:"🔴",title:"RISKY",subtitle:"Short outings only",color:"#dd5f1b"};
-  return{lvl:"danger",stageN:5,emoji:"🛑",title:"DANGER",subtitle:"Better to stay indoors right now",color:"#c92a2a"};
+  const b=BANDS.find(x=>s>=x.min)||BANDS[BANDS.length-1];
+  return Object.assign({color:b.ink},b);
 }
 function durationFor(s){
   if(s>=80)return"45–60+ min";
@@ -1131,7 +1357,11 @@ function aqiAt(iso){
 }
 const hourStr=dt=>dt.toLocaleTimeString([],{hour:'numeric'});
 const hourLabel=hr=>hr.isToday?hourStr(hr.dt):hr.dt.toLocaleDateString([],{weekday:'short'})+' '+hourStr(hr.dt);
-const tlShort=dt=>{let h=dt.getHours();const ap=h<12?'a':'p';h=h%12;if(h===0)h=12;return h+ap;};
+/* Axis labels spell the meridiem out: "8p" saves eight pixels and costs the
+   reader a beat working out whether it is morning or evening, which is the one
+   thing a walk-timing axis exists to tell them. Only every second hour is
+   printed, so the width is there to spend. */
+const tlShort=dt=>dt.toLocaleTimeString([],{hour:'numeric'}).replace(/\s+/g,' ');
 
 /* build the next-12-hours walkability outlook */
 function buildOutlook(b){
@@ -1144,8 +1374,11 @@ function buildOutlook(b){
     const ctx={feels:toF(h.apparent_temperature[i]), temp:toF(h.temperature_2m[i]), hum:h.relative_humidity_2m[i],
       wind:toMph(h.wind_speed_10m[i]), gust:toMph(h.wind_gusts_10m?.[i]??h.wind_speed_10m[i]*1.4),
       aqi:aqiAt(iso), uv:h.uv_index?.[i]??4, pop:h.precipitation_probability?.[i]??0, age:mods.age, build:mods.build};
-    const s=scoreCore(ctx,b).score;
-    hours.push({i,iso,dt,isToday:iso.slice(0,10)===todayStr,score:s,
+    /* keep the whole core, not just the number: the headline has to be able to
+       say WHY the recommended hour is the recommended hour ("asphalt drops
+       below 125° then"), and that needs each hour's limiting factor. */
+    const core=scoreCore(ctx,b), s=core.score;
+    hours.push({i,iso,dt,isToday:iso.slice(0,10)===todayStr,score:s,core,
       tempDisp:round(h.temperature_2m[i]),feelsDisp:round(h.apparent_temperature[i]),lvl:levelOf(s)});
   }
   return hours;
@@ -1170,68 +1403,117 @@ function pickWindows(hours){
   const show=ranked.slice(0,2).sort((a,z)=>a.start.i-z.start.i);   // read them in time order
   return {none:false,tier,list:show,best:ranked[0]};
 }
-function renderOutlook(hours,name,alerts){
+/* Plain-English name of a limiting factor. Two forms: one that slots into a
+   sentence, one that heads the limiting strip. */
+const FACTOR_NAME={heat:"the air",pave:"the pavement",cold:"the cold",wind:"the wind",
+  air:"air quality",load:"the exertion load",precip:"the rain"};
+const LIM_NAME={heat:"heat",pave:"pavement heat",cold:"cold",wind:"wind",
+  air:"air quality",load:"exertion load",precip:"rain"};
+/* "+3 h 50 m" — how far off the recommended window is. */
+function untilStr(ms){
+  const m=Math.max(0,Math.round(ms/60000)), h=Math.floor(m/60), r=m%60;
+  return h?`+${h} h${r?" "+r+" m":""}`:`+${r} m`;
+}
+/* ══ HERO ═══════════════════════════════════════════════════════════════
+   The screen answers WHEN, not how bad it is: the next usable window is the
+   headline and the current state is a row beneath it. The 12-hour band plots
+   the score against a fixed 0-100 track, so bar height means walkability —
+   the old strip plotted temperature, where five neighbouring hours differed by
+   about a point of height and the scale could not be read at all. */
+function renderHero(hours,name,alerts){
   alerts=alerts||{};
-  const ni=nowIndex(), W=pickWindows(hours), dur=durationFor(W.best.peak.score);
-  const spanOf=w=>{
-    const endPlus=new Date(w.end.dt.getTime()+3600000);
-    return (w.start.i===ni?"now":hourLabel(w.start))+"\u2013"+hourLabel({dt:endPlus,isToday:w.end.isToday});
-  };
-  const spans=W.list.map(w=>`<b>${spanOf(w)}</b>`).join(" and ");
-  const many=W.list.length>1, startsNow=W.list.length>0&&W.list[0].start.i===ni;
-  /* when the lead already says "now", "now-8 PM" repeats itself — say "until 8 PM" */
-  const soloNow=startsNow&&!many;
-  const spansLead=soloNow
-    ? `<b>until ${hourLabel({dt:new Date(W.list[0].end.dt.getTime()+3600000),isToday:W.list[0].end.isToday})}</b>`
-    : spans;
-  const bt=$("bestTime"); bt.className="besttime lvl-"+W.best.peak.lvl.lvl;
-  /* "A great time to walk" is an all-clear statement, so it needs an all-clear to earn:
-     the window has to peak in the SAFE band AND nothing else may be flagged. A 61 with
-     118 degree pavement is walkable, but it is not great. */
-  const allClear=W.best.peak.score>=80 && !alerts.paveWarn && !alerts.paveHot;
+  const ni=nowIndex(), W=alerts.W||pickWindows(hours), nowHr=hours[0];
+  const endPlus=w=>new Date(w.end.dt.getTime()+3600000);
+  const startsNow=!W.none&&W.list.length>0&&W.list[0].start.i===ni;
+  const first=W.none?null:W.list[0];
+
+  /* ── headline ── */
+  let lbl="Recommendation", when, delta="", why;
   if(W.none){
-    bt.innerHTML=`<div class="bt-emoji">🛑</div><div class="bt-txt">
-      <div class="bt-main">No safe walking window ${hours.some(x=>!x.isToday)?"in sight":"left today"}</div>
-      <div class="bt-sub">Conditions stay tough for ${name}. Best is around <b>${hourLabel(W.best.peak)}</b> (still ${W.best.peak.lvl.title.toLowerCase()}) — limit to a <b>${dur}</b> potty break.</div></div>`;
-  } else if(W.tier==="caution"){
-    bt.innerHTML=`<div class="bt-emoji">⚠️</div><div class="bt-txt">
-      <div class="bt-main">Best window${many?"s":""}: ${spans}</div>
-      <div class="bt-sub">Not ideal today for ${name} — keep it to <b>${dur}</b> with shade &amp; water. Easiest around ${hourLabel(W.best.peak)}.</div></div>`;
-  } else if(allClear){
-    bt.className="besttime lvl-clear";
-    const lead=many?`Best times to walk ${name}:`
-      :(startsNow?`Now’s a great time to walk ${name}!`:`Best time to walk ${name}:`);
-    bt.innerHTML=`<div class="bt-emoji">🌟</div><div class="bt-txt">
-      <div class="bt-main">${lead} ${spansLead}</div>
-      <div class="bt-sub">Nothing to work around — comfortable for a <b>${dur}</b> walk · the air feels around ${W.best.peak.feelsDisp}° at ${hourLabel(W.best.peak)}.${many?" The hours in between run warmer.":""}</div></div>`;
+    lbl="No window in the next 12 h";
+    when="Not today";
+    /* durationFor can return a phrase ("indoor play only") rather than a span,
+       so it cannot be dropped into "keep it to a ___ break" unconditionally */
+    const d=durationFor(W.best.peak.score);
+    const advice=/min/.test(d)?`keep it to a <b>${d}</b> garden break`:`<b>${d}</b>`;
+    why=`Conditions stay hard for ${name} the whole time. The easiest hour is <b>${hourLabel(W.best.peak)}</b> and even that sits in the <b>${W.best.peak.lvl.title}</b> band — ${advice}.`;
+  } else if(startsNow){
+    lbl="Recommendation · now";
+    when="Good to go now";
+    delta=`until ${hourLabel({dt:endPlus(first),isToday:first.end.isToday})}`;
+    /* what will CLOSE the window is the useful thing to name; that it is open
+       is already said by the headline */
+    const after=hours.find(hr=>hr.i>first.end.i);
+    why=after
+      ? `Good for about <b>${durationFor(W.best.peak.score)}</b>. From <b>${hourLabel(after)}</b> ${FACTOR_NAME[after.core.lead.k]||"conditions"} turns it back to ${after.lvl.title.toLowerCase()}.`
+      : `Good for about <b>${durationFor(W.best.peak.score)}</b> — the air feels around ${W.best.peak.feelsDisp}°.`;
   } else {
-    bt.className="besttime lvl-monitor";
-    const lead=many?`Walkable windows for ${name}:`
-      :(startsNow?`OK to walk ${name} now — but keep an eye on things`:`Walkable window for ${name}:`);
-    const watch=alerts.paveWarn
-      ? `pavement is ≈ <b>${alerts.dispPave}°</b> in the sun, so stay on grass or in shade and check it with the 7-second test`
-      : `conditions are workable rather than ideal, so keep the pace easy`;
-    bt.innerHTML=`<div class="bt-emoji">🟡</div><div class="bt-txt">
-      <div class="bt-main">${lead} ${spansLead}</div>
-      <div class="bt-sub">Fine for a <b>${dur}</b> walk with a little care — ${watch}. The air feels around ${W.best.peak.feelsDisp}° at ${hourLabel(W.best.peak)}.</div></div>`;
+    lbl=first.start.isToday?"Recommendation · today":"Recommendation";
+    when=`Better from ${hourLabel(first.start)}`;
+    delta=untilStr(first.start.dt-nowHr.dt);
+    /* The reason is the current limiting factor easing off. Naming it is only
+       possible because the aggregation leaves exactly one — under a summed
+       score there was no single thing to point at. */
+    const eases={
+      pave:()=>`The asphalt drops below the burn line by then — right now it is ≈ <b>${fToDisp(nowHr.core.pavement)}°</b> in the sun.`,
+      heat:()=>`The air cools off by then — right now it feels like <b>${nowHr.feelsDisp}°</b>, above ${name}'s comfort zone.`,
+      cold:()=>`It warms up by then — right now it feels like <b>${nowHr.feelsDisp}°</b>, chilly for ${name}.`,
+      wind:()=>`The wind eases off by then.`,
+      air:()=>`Air quality improves by then.`,
+      load:()=>`Sun and humidity ease off by then.`,
+      precip:()=>`The rain clears by then.`
+    };
+    why=(eases[nowHr.core.lead.k]||eases.heat)()+` Then it is good for about <b>${durationFor(first.peak.score)}</b>.`;
   }
-  $("timeline").innerHTML=hours.map(hr=>{
-    const best=!W.none&&W.list.some(x=>hr.i>=x.start.i&&hr.i<=x.end.i);
-    return `<div class="tl-cell ${best?'best':''}">
-      <div class="tl-time">${hr.i===ni?'Now':tlShort(hr.dt)}</div>
-      <div class="tl-bar"><i style="height:${Math.max(6,hr.score)}%;background:${hr.lvl.color}"></i></div>
-      <div class="tl-em">${hr.lvl.emoji}</div>
-      <div class="tl-temp">${hr.tempDisp}°</div></div>`;
+  $("recLbl").textContent=lbl;
+  $("recWhen").textContent=when;
+  $("recDelta").textContent=delta;
+  $("recWhy").innerHTML=why;
+
+  /* ── the 12-hour card ── */
+  /* the band the CURRENT hour lands in — the capped one the now card shows,
+     not hours[0] raw, so chip and badge can never disagree */
+  const L=alerts.L||hours[0].lvl;
+  const inWin=hr=>!W.none&&W.list.some(x=>hr.i>=x.start.i&&hr.i<=x.end.i);
+  $("b12Bars").innerHTML=hours.map(hr=>
+    `<div class="b12-col" title="${hourLabel(hr)} · ${hr.score}/100 ${hr.lvl.title}">
+       <div class="b12-track${inWin(hr)?" win":""}">
+         <div class="b12-fill" style="height:${Math.max(6,hr.score)}%;background-color:${hr.lvl.ink};border-color:${hr.lvl.rim}"></div>
+       </div>
+     </div>`).join("");
+  /* every second hour, spelled with AM/PM — see .b12-tick for why it fits */
+  $("b12Axis").innerHTML=hours.map((hr,n)=>{
+    const show=hr.i===ni||n%2===0;
+    return `<div class="b12-tick${hr.i===ni?" on":""}">${show?(hr.i===ni?"Now":tlShort(hr.dt)):"&nbsp;"}</div>`;
   }).join("");
-  $("tlTitle").textContent="Walkability · next 12 hours";
-  $("tlLegend").innerHTML=[["Safe","#2e9e4f"],["Good","#e3b428"],["Caution","#e08a1e"],["Risky","#dd5f1b"],["Danger","#c92a2a"]]
-    .map(([l,c])=>`<span><span class="dot" style="width:8px;height:8px;background:${c}"></span>${l}</span>`).join("");
+  const wl=$("b12Win");
+  wl.hidden=W.none;
+  if(!W.none){
+    const f=W.list[0];
+    /* name the hour the window opens rather than saying "a window exists" —
+       that time is the thing the reader came for */
+    wl.innerHTML=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>`
+      + (f.start.i===ni
+          ? `Recommended until ${hourLabel({dt:new Date(f.end.dt.getTime()+3600000),isToday:f.end.isToday})}`
+          : `Recommended from ${hourLabel(f.start)}`);
+  }
+  /* the band scale, printed exactly once on the whole screen. The chip carries
+     the word, the icon and the band's own edge colour, so it survives both a
+     narrow column and a reader who cannot separate the hues. */
+  $("b12Legend").innerHTML=BANDS.map(b=>{
+    const on=b.stageN===L.stageN;
+    return `<span class="b12-chip${on?" on":""}"
+      style="border-color:${b.rim};color:${b.rim}${on?`;background:${b.rim}`:""}"
+      ${on?'aria-current="true"':""}>${bandSvg(b.icon)}<span>${b.title}</span></span>`;
+  }).join("");
+  $("b12Title").textContent="Walkability · next 12 h";
 }
 
 function computeDogIndex(){
   if(!STATE.data) return;
   const c=STATE.data.current;
   const b=BREEDS[$("breed").value]||BREEDS["Generic / Mixed"];
+  const breedLabel=$("breed").value||"Generic / Mixed";
   const mods=dogMods();
   const rawName=$("dogName").value.trim(), name=rawName||"your dog";
 
@@ -1256,81 +1538,215 @@ function computeDogIndex(){
   const L0=levelOf(score);
   const L=(paveWarn&&L0.stageN===1)?levelOf(70):L0, lvl=L.lvl;
 
-  const g=$("dogGauge"); g.className="gauge lvl-"+lvl;
-  const ring=$("dogRing"); ring.style.setProperty('--p',score); ring.style.setProperty('--c',L.color);
+  /* ── NOW card: the score stated once, and the readings behind it ──
+     Pavement is pulled out into its own chip. It differs from air temperature
+     by 40-60°, it is what actually burns pads, and it is the reading an
+     ordinary forecast never gives you — so it is set as a figure, in its own
+     band's colours, rather than buried in a sentence next to "feels like". */
   $("dogNum").textContent=score;
-  $("dogTitle").innerHTML=`${L.emoji} ${L.title}`;
-  $("dogTitleSub").textContent=L.subtitle;
-  [...$("stages").children].forEach((el,i)=>el.classList.toggle("active",i===L.stageN-1));
+  const badge=$("nowBadge");
+  badge.style.background=L.ink; badge.style.borderColor=L.rim;
+  const kick=$("nowKicker"); kick.textContent=`Now · ${L.title}`; kick.style.color=L.rim;
+  const pc=$("paveChip");
+  pc.style.borderColor=pb.rim; pc.style.color=pb.rim;
+  pc.innerHTML=`<span class="pc-lbl">Pavement heat</span><b>${dispPave}°</b><span class="pc-band">${pb.label}</span>`;
+  $("nowFeels").innerHTML=`Asphalt in direct sun · air feels like <b>${dispFeels}°</b>`;
 
-  // rest-of-day outlook: best time to walk + hourly walkability
-  renderOutlook(buildOutlook(b), name, {paveWarn,paveHot,dispPave});
+  // the day ahead: when to go, and the 12-hour shape of it
+  const hours=buildOutlook(b), W=pickWindows(hours);
+  renderHero(hours, name, {paveWarn,paveHot,dispPave,L,W});
+
+  /* One line, because the model leaves exactly one limiting factor to name.
+     It says what would have to change and when, not merely what is wrong —
+     "pavement drops below 125° at 7:30 PM" is actionable; "pavement is hot"
+     is what the reader already worked out from the chip above it. */
+  const ls=$("limStrip");
+  ls.hidden=core.dLead<5;
+  if(!ls.hidden){
+    const opens=(!W.none&&W.list[0].start.i!==nowIndex())?W.list[0].start:null;
+    const when=opens?hourLabel(opens):null;
+    const detail={
+      pave:when?`drops below the ${fToDisp(125)}° burn line around <b>${when}</b>`
+                :`sits at ${dispPave}° against a ${fToDisp(125)}° burn line`,
+      heat:when?`the air cools into ${name}'s range around <b>${when}</b>`
+                :`feels like ${dispFeels}°, past ${name}'s comfort limit`,
+      cold:when?`it warms into ${name}'s range around <b>${when}</b>`
+                :`feels like ${dispFeels}°, below ${name}'s comfort limit`,
+      wind:when?`gusts ease around <b>${when}</b>`:`gusting to ${dispGust} ${spdU()}`,
+      air: when?`air quality clears around <b>${when}</b>`:`US AQI ${aqi}`,
+      load:when?`sun and humidity ease around <b>${when}</b>`:`humidity ${round(hum)}% · UV ${round(uv)}`,
+      precip:when?`the rain clears around <b>${when}</b>`:`${round(pop)}% chance of rain`
+    }[core.lead.k]||"";
+    ls.innerHTML=`<span class="ls-i" style="background:${L.ink}">${bandSvg(L.icon)}</span>`
+      +`<span><b>Limiting: ${LIM_NAME[core.lead.k]||"conditions"}</b> — ${detail}</span>`;
+  }
 
   // walk guide: remember conditions; map refreshes on location load / duration change
   STATE.score=score; STATE.mapLevel=L; STATE.walkName=name;
   if(STATE.walkMinutes==null) STATE.walkMinutes=walkPlan(score).minutes;
 
-  // dominant concern
-  const issues=[{k:"heat",v:heatPen},{k:"pave",v:pavePen},{k:"cold",v:coldPen},{k:"wind",v:windPen},{k:"air",v:airPen},{k:"fatigue",v:fatigue*0.6}].sort((a,z)=>z.v-a.v);
-  const top=issues[0], second=issues[1];
-  const alsoName={heat:"heat",pave:"hot pavement",cold:"cold",wind:"wind",air:"air quality",fatigue:"humidity & UV"};
-  const also=(second&&second.v>=8&&top.v>=8)?` Also worth noting: <b>${alsoName[second.k]}</b>.`:"";
-  let verdict;
-  if(score>=78) verdict=`Comfortable out there for ${name}. Enjoy the walk — bring water anyway.`;
-  else if(top.k==="pave") verdict=`Main concern for ${name}: <b>${pb.key==="ok"?"ground temperature":"hot pavement"}</b> — asphalt ≈ ${dispPave}° in the sun, ${pb.note}.`;
-  else if(top.k==="heat") verdict=`Main concern for ${name}: <b>heat</b> — the air feels like ${dispFeels}°, above this breed's comfort zone.`;
-  else if(top.k==="cold") verdict=`Main concern for ${name}: <b>cold</b> — the air feels like ${dispFeels}°, chilly for this breed.`;
-  else if(top.k==="wind") verdict=`Main concern for ${name}: <b>wind</b> — gusts to ${dispGust} ${spdU()}.`;
-  else if(top.k==="air") verdict=`Main concern for ${name}: <b>air quality</b> — US AQI ${aqi}.`;
-  else verdict=`Main concern for ${name}: <b>fatigue / exertion</b> — keep it short and shaded.`;
-  $("dogVerdict").innerHTML=verdict+(top.v>=8?also:"");
-
-  // factor bars
-  const fac=(label,pen,max,val,color,band)=>{
-    const pct=band?band.pct:Math.min(100,pen/max*100);
-    const load=band?band.label:(pct<20?"Low":pct<50?"Moderate":pct<75?"High":"Severe");
-    if(band) color=band.color;
-    return `<div class="factor"><div class="fl"><span>${label}</span><b>${load}</b></div>
-      <div class="fv">${val}</div><div class="fbar"><i style="width:${pct}%;background:${color}"></i></div></div>`;
+  /* ══ BENTO: how this score was reached ══════════════════════════════
+     One limiting factor with its full contribution, one runner-up at a third,
+     and everything else grouped into a single quiet module with a WORD instead
+     of a number — because a factor contributing nothing does not deserve a
+     figure the reader has to compare against five others to dismiss. */
+  const FACT={
+    heat:{name:"Heat", ctx:`above ${name}'s comfort range`, big:`${dispFeels}°`, unit:"feels like",
+          read:`feels ${dispFeels}°`,
+          scale:{lo:fToDisp(40),hi:fToDisp(115),at:dispFeels,limit:fToDisp(core.heatStart),limitLbl:"comfort limit"}},
+    pave:{name:"Pavement heat / asphalt", ctx:pb.note, big:`${dispPave}°`, unit:`air ${fToDisp(tempF)}° + sun`,
+          read:`≈ ${dispPave}° in the sun`,
+          scale:{lo:fToDisp(60),hi:fToDisp(170),at:dispPave,limit:fToDisp(125),limitLbl:"burn line"}},
+    cold:{name:"Cold", ctx:`below ${name}'s comfort range`, big:`${dispFeels}°`, unit:"feels like",
+          read:`feels ${dispFeels}°`,
+          scale:{lo:fToDisp(-10),hi:fToDisp(70),at:dispFeels,limit:fToDisp(core.coldThresh),limitLbl:"chill limit"}},
+    wind:{name:"Wind", ctx:"gusting", big:`${dispGust}`, unit:spdU(),
+          read:`${dispWind} (gusts ${dispGust}) ${spdU()}`, scale:null},
+    air:{name:"Air quality", ctx:"US air quality index", big:aqi!=null?`${aqi}`:"n/a", unit:"US AQI",
+          read:aqi!=null?`AQI ${aqi}`:"no reading", scale:null},
+    /* humidity is the term that usually carries this one, and "UV 0" as the
+       headline figure of a factor driven by 88% humidity reads as a mistake */
+    load:{name:"Exertion load", ctx:"sun and humidity together", big:`${round(hum)}%`, unit:`humidity · UV ${round(uv)}`,
+          read:`humidity ${round(hum)}% · UV ${round(uv)}`, scale:null},
+    precip:{name:"Rain", ctx:"chance of rain", big:`${round(pop)}%`, unit:"chance",
+          read:`${round(pop)}% chance`, scale:null}
   };
-  $("dogFactors").innerHTML=
-    fac("🌡️ Heat",heatPen,60,`Feels ${dispFeels}°`,"var(--danger)")+
-    fac("🔥 Pavement",pavePen,45,`feels ≈ ${dispPave}°`,"#ff7a3c",pb)+
-    fac("❄️ Cold",coldPen,60,`Feels ${dispFeels}°`,"var(--cold)")+
-    fac("💨 Wind",windPen,35,`${dispWind} (g${dispGust}) ${spdU()}`,"var(--accent)")+
-    fac("🌫️ Air quality",airPen,45,aqi!=null?`AQI ${aqi}`:"n/a","var(--warn)")+
-    fac("😮‍💨 Fatigue",fatigue*0.6,30,`Hum ${round(hum)}% · UV ${round(uv)}`,"var(--accent2)");
+  const meta=k=>FACT[k]||FACT.heat;
+  const lm=meta(core.lead.k), sm=meta(core.second.k);
 
-  // recommendations (incl. breed-specific)
-  const recs=[]; const heavyHeat=heatPen>25,mildHeat=heatPen>8,heavyCold=coldPen>25,mildCold=coldPen>8;
-  const breedSel=$("breed").value, isGeneric=(!breedSel||breedSel==="Generic / Mixed");
-  if(isGeneric)
-    recs.push(["breed","🐕",`Pick ${name==="your dog"?"your dog's":name+"’s"} breed above for tailored advice. In general: watch for heavy panting or lagging, bring water when it's warm, add a coat when it's cold, and always check the pavement before you set off.`]);
-  else
-    recs.push(["breed","🐕",`<b>${breedSel} tip:</b> ${breedNote(name,b)}`]);
-  if(heavyHeat){
-    recs.push(["","🥵",`Too hot for ${name}. Walk at dawn/dusk, stay on grass/shade, and <b>test the pavement</b> — if it's too hot for your hand for 7 seconds, it's too hot for paws.`]);
-    recs.push(["","💧",`Bring water and take frequent breaks. Watch for heavy panting, drooling or lagging behind.`]);
-    if(b.brachy) recs.push(["","🐽",`Flat‑faced breeds overheat fast — keep it very short and never leave in a car.`]);
-  } else if(mildHeat){ recs.push(["","☀️",`A bit warm — favor shade, bring water, keep the pace easy.`]); }
-  if(paveHot) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Stay on grass or shade, or wait for cooler hours (7‑second back‑of‑hand test).`]);
-  else if(paveWarn) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. It is below the ~125° burn point but climbing, so do the 7‑second hand test before you set off.`]);
-  else if(paveNote) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Well below the ~125° burn point, but pads still feel it.`]);
-  if(mildHeat||heavyHeat||paveWarn){
-    if(mods.age==="senior") recs.push(["","🎂",`Senior dogs regulate heat poorly — keep it gentle, shaded and short, and watch closely for tiring.`]);
-    else if(mods.age==="puppy") recs.push(["","🐾",`Puppies can't regulate temperature well yet — keep outings short and out of the midday sun.`]);
-    if(mods.build==="overweight") recs.push(["","⚖️",`Extra weight makes ${name} overheat faster — go slower and shorter, and bring water.`]);
+  /* A deduction under 5 points has not limited anything; naming it "the
+     limiting factor" would put a heading on noise. Say the day is clear
+     instead, and keep the near-miss as a footnote. */
+  const limiting=core.dLead>=5;
+  let scaleHtml="";
+  if(limiting&&lm.scale){
+    const s=lm.scale, span=s.hi-s.lo, pct=v=>Math.max(0,Math.min(100,(v-s.lo)/span*100));
+    scaleHtml=`<div class="lim-scale">
+      <div class="lim-track">
+        <i style="width:${pct(s.at)}%;background:${L.ink}"></i>
+        <span class="lim-mark" style="left:${pct(s.limit)}%"></span>
+      </div>
+      <div class="lim-ends"><span>${s.lo}°</span><span>${s.hi}°</span></div>
+      <div class="lim-limit"><b>${s.limit}°</b> ${s.limitLbl}</div>
+    </div>`;
   }
+  $("modLim").innerHTML=limiting
+    ? `<div class="modlbl">Limiting factor</div>
+       <div class="mod-hd"><div><div class="mod-name">${lm.name}</div>
+         <div class="mod-sub">${lm.ctx}</div></div>
+         <div class="mod-pen" style="color:${L.ink}">&minus;${core.dLead}</div></div>
+       <div class="mod-val">${lm.big}<em>${lm.unit}</em></div>${scaleHtml}`
+    : `<div class="modlbl">Limiting factor</div>
+       <div class="mod-hd"><div><div class="mod-name">Nothing is holding it back</div>
+         <div class="mod-sub">every factor sits inside ${name}'s comfort range${core.dLead>0?` — the closest is ${lm.name.toLowerCase()}, at &minus;${core.dLead}`:""}</div></div>
+         <div class="mod-pen" style="color:${BANDS[0].ink}">&minus;${core.dLead}</div></div>
+       <div class="mod-val">${score}<em>of 100</em></div>`;
+
+  $("modSec").innerHTML=core.dSecond>0
+    ? `<div class="modlbl">Then</div>
+       <div class="mod-hd"><div class="mod-name">${sm.name}</div>
+         <div class="mod-pen" style="color:var(--muted)">&minus;${core.dSecond}</div></div>
+       <div class="mod-sub">${sm.read} — counted at a third, so a second problem still registers without doubling the first</div>`
+    : `<div class="modlbl">Then</div>
+       <div class="mod-name">Nothing else</div>
+       <div class="mod-sub">no second factor contributes</div>`;
+
+  /* Everything that did not decide anything. A word, not a number — a factor
+     contributing nothing does not deserve a figure the reader has to compare
+     against five others just to dismiss it. */
+  const shown=new Set([core.lead.k,core.second.k]);
+  const restRows=core.parts.filter(p=>!shown.has(p.k)).map(p=>{
+    const m=meta(p.k), word=p.pen<1?"no effect":p.pen<8?"minor":"noted";
+    return `<div class="oth-row"><span class="on">${m.name}</span>
+      <span class="ov">${m.read}</span><span class="ow">${word}</span></div>`;
+  }).join("");
+  $("modOth").innerHTML=`<div class="modlbl">Other factors</div>
+    <div style="margin-top:6px">${restRows}</div>
+    <div class="mod-sub" style="margin-top:10px">The score is <b>100 − (${core.dLead} + ${core.dSecond}) = ${score}</b>. The largest deduction counts in full and the runner-up at a third, so one hot afternoon is not charged three times over — and nothing here is averaged away.</div>`;
+
+  /* ── advice, split two ways ───────────────────────────────────────
+     The score and the conditions are the same for every dog standing on that
+     pavement, so the advice they produce belongs in one general list. What
+     changes per animal — the breed's own thresholds, its coat, its age and
+     build — is an add-on, and gets its own box. Keeping them apart means the
+     general list stops repeating breed caveats to people who never picked a
+     breed, and the breed box has something to say beyond a badge. */
+  const recs=[], breedRecs=[];
+  const heavyHeat=heatPen>25,mildHeat=heatPen>8,heavyCold=coldPen>25,mildCold=coldPen>8;
+  const breedSel=$("breed").value, isGeneric=(!breedSel||breedSel==="Generic / Mixed");
+
+  /* ── breed add-ons ── */
+  if(isGeneric)
+    breedRecs.push(["breed","🐕",`Pick ${name==="your dog"?"your dog's":name+"’s"} breed above and this box fills with advice for that breed — and the walking hours shift with it.`]);
+  else
+    breedRecs.push(["breed","🐕",breedNote(name,b)]);
+  if((heavyHeat||paveWarn)&&b.brachy)
+    breedRecs.push(["","🐽",`Flat‑faced breeds overheat fast and cannot pant their way out of it — keep it very short today, and never leave ${name} in a car.`]);
+  if((mildHeat||heavyHeat)&&b.coat>=3)
+    breedRecs.push(["","🧊",`That double coat traps heat. Don't shave it — it insulates both ways — but do favour shade and take it slower.`]);
+  if((mildCold||heavyCold)&&b.coat<=1)
+    breedRecs.push(["","🧥",`With almost no coat, ${name} feels this well before a thick‑coated dog would. A jacket earns its keep today.`]);
+  if((mildCold||heavyCold)&&b.cold>=5)
+    breedRecs.push(["","❄️",`${breedSel}s are built for this and will want to stay out — the limit is the paws, not the cold: watch for ice and road salt.`]);
+  if(mildHeat||heavyHeat||paveWarn){
+    if(mods.age==="senior") breedRecs.push(["","🎂",`Senior dogs regulate heat poorly — keep it gentle, shaded and short, and watch closely for tiring.`]);
+    else if(mods.age==="puppy") breedRecs.push(["","🐾",`Puppies can't regulate temperature well yet — keep outings short and out of the midday sun.`]);
+    if(mods.build==="overweight") breedRecs.push(["","⚖️",`Extra weight makes ${name} overheat faster — go slower and shorter, and bring water.`]);
+  }
+
+  /* ── general, condition-driven ── */
+  if(heavyHeat){
+    recs.push(["","🥵",`Too hot for a normal walk. Go at dawn or dusk, stay on grass and shade, and <b>test the pavement</b> — too hot for your hand for 7 seconds is too hot for paws.`]);
+    recs.push(["","💧",`Bring water and take frequent breaks. Watch for heavy panting, drooling or lagging behind.`]);
+  } else if(mildHeat){ recs.push(["","☀️",`A bit warm — favour shade, bring water, keep the pace easy.`]); }
+  if(paveHot) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Stay on grass or shade, or wait for cooler hours (7‑second back‑of‑hand test).`]);
+  else if(paveWarn) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. It is below the ~${fToDisp(125)}° burn point but climbing, so do the 7‑second hand test before you set off.`]);
+  else if(paveNote) recs.push(["","🔥",`Pavement ≈ <b>${dispPave}°</b> — ${pb.note}. Well below the ~${fToDisp(125)}° burn point, but pads still feel it.`]);
   if(heavyCold){
-    recs.push(["","🧥",`Too cold for ${name}. Put on a <b>warm insulated coat/sweater</b> and consider <b>paw booties</b> or paw balm.`]);
-    recs.push(["","⏱️",`Keep the outing short; watch for shivering or lifting paws.`]);
-  } else if(mildCold){ recs.push(["","🧣",`Chilly out — a light sweater is a good idea for ${name}, especially if short‑haired.`]); }
+    recs.push(["","🧥",`Too cold for a long outing. Put on a <b>warm insulated coat</b> and consider <b>paw booties</b> or paw balm.`]);
+    recs.push(["","⏱️",`Keep it short; watch for shivering or lifting paws.`]);
+  } else if(mildCold){ recs.push(["","🧣",`Chilly out — a light sweater is a good idea, especially for a short‑haired dog.`]); }
   if(windPen>15) recs.push(["","💨",`Gusty wind — pick sheltered routes and watch for flying debris.`]);
   if(airPen>15) recs.push(["","😷",`Air quality is elevated (AQI ${aqi}). Shorten vigorous play, especially for flat‑faced or senior dogs.`]);
-  if(fatigue*0.6>18) recs.push(["","😮‍💨",`High exertion load — swap running/fetch for a gentle sniff‑walk to avoid overheating.`]);
-  if(uv>=8&&!heavyCold) recs.push(["","🕶️",`Strong sun (UV ${round(uv)}) — protect thin‑coated noses & ears; seek shade.`]);
-  if(recs.length===1) recs.push(["","✅",`No special gear needed — great conditions. Have fun, ${name}!`]);
-  $("dogRecs").innerHTML=recs.map(([cls,em,t])=>`<div class="rec ${cls}"><span class="em">${em}</span><span>${t}</span></div>`).join("");
+  if(fatigue*0.6>18) recs.push(["","😮‍💨",`High exertion load — swap running or fetch for a gentle sniff‑walk to avoid overheating.`]);
+  if(uv>=8&&!heavyCold) recs.push(["","🕶️",`Strong sun (UV ${round(uv)}) — protect thin‑coated noses and ears; seek shade.`]);
+  if(!recs.length) recs.push(["","✅",`Nothing to work around — no special gear needed. Have fun, ${name}!`]);
+
+  const renderRecs=list=>list.map(([cls,em,t])=>
+    `<div class="rec ${cls}"><span class="em">${em}</span><span>${t}</span></div>`).join("");
+  $("dogRecs").innerHTML=renderRecs(recs);
+
+  /* ── the breed box ────────────────────────────────────────────────
+     The thresholds here are read back out of the scorer rather than
+     recomputed, and "average" is a real second run of the same function with
+     the generic breed — so the two numbers cannot drift apart from the model
+     the way a hand-written multiplier did. */
+  const avg=scoreCore({feels,temp:tempF,hum,wind,gust,aqi,uv,pop,age:"adult",build:"average"},
+                      BREEDS["Generic / Mixed"]);
+  /* heat bites ABOVE its threshold and cold BELOW it, so "sooner" flips sign
+     between the two: a lower heat limit and a higher cold limit both mean a
+     more sensitive dog. */
+  const limRow=(label,mine,base,dir)=>{
+    const d=Math.round(Math.abs(fToDisp(mine)-fToDisp(base)));
+    const sooner=dir==="heat"?mine<base:mine>base;
+    const note=d===0?"same as an average dog"
+      :`${d}° ${sooner?"sooner":"later"} than an average dog`;
+    return `<div class="pl-row"><span class="pl-k">${label}</span>
+      <b>${fToDisp(mine)}°</b><span class="pl-d">${note}</span></div>`;
+  };
+  const profBits=[];
+  if(b.brachy) profBits.push("flat‑faced");
+  profBits.push(b.coat>=3?"dense double coat":b.coat<=1?"thin coat":"medium coat");
+  if(mods.age!=="adult") profBits.push(mods.age);
+  if(mods.build!=="average") profBits.push(mods.build);
+  $("modProf").innerHTML=`<div class="modlbl">Breed add-ons</div>
+    <div class="mod-name" style="margin-top:4px">${breedLabel}</div>
+    <div class="mod-sub">${profBits.join(" · ")}</div>
+    <div class="prof-lims">
+      ${limRow("Feels hot above",core.heatStart,avg.heatStart,"heat")}
+      ${limRow("Feels cold below",core.coldThresh,avg.coldThresh,"cold")}
+    </div>
+    <div class="recs">${renderRecs(breedRecs)}</div>`;
 
   // warning banner
   const wb=$("warnBanner"),wt=$("warnText");
