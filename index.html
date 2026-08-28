@@ -1396,11 +1396,29 @@ function buildOutlook(b){
    better one later — so a morning of straight greens got passed over for the evening. */
 function pickWindows(hours){
   const runs=mask=>{let res=[],cur=null;hours.forEach(hr=>{if(mask(hr.score)){if(!cur){cur={start:hr,end:hr,peak:hr};res.push(cur);}else{cur.end=hr;if(hr.score>cur.peak.score)cur.peak=hr;}}else cur=null;});return res;};
+  /* A short dip that is still walkable does not end a walk. Without this, one
+     74 at 3 PM — GOOD, "OK to walk" — split an otherwise clear twelve hours
+     into a one-hour window plus a separate later one, and the headline then
+     reported only the first: "good to go now, until 3 PM" on an afternoon that
+     never stopped being fine. Bridge gaps of up to two hours that stay above
+     `floor`; anything longer or deeper is a real interruption and still splits. */
+  const bridge=(list,floor,maxGap)=>list.reduce((out,w)=>{
+    const prev=out[out.length-1];
+    if(prev){
+      const gap=hours.filter(h=>h.i>prev.end.i&&h.i<w.start.i);
+      if(gap.length<=maxGap&&gap.every(h=>h.score>=floor)){
+        prev.end=w.end;
+        if(w.peak.score>prev.peak.score)prev.peak=w.peak;
+        return out;
+      }
+    }
+    return out.concat(w);
+  },[]);
   /* Prefer runs of straight SAFE hours. Only if the day never gets there do we widen
      to GOOD, so "best time" means the genuinely clear hours rather than the merely
      acceptable ones either side of them. */
-  let list=runs(s=>s>=80), tier="prime";
-  if(!list.length){ list=runs(s=>s>=60); tier="good"; }
+  let list=bridge(runs(s=>s>=80),60,2), tier="prime";
+  if(!list.length){ list=bridge(runs(s=>s>=60),42,2); tier="good"; }
   if(!list.length){ list=runs(s=>s>=42); tier="caution"; }
   if(!list.length){
     const best=hours.reduce((a,z)=>z.score>a.score?z:a,hours[0]);
@@ -1448,13 +1466,26 @@ function renderHero(hours,name,alerts){
   } else if(startsNow){
     lbl="Recommendation · now";
     when="Good to go now";
-    delta=`until ${hourLabel({dt:endPlus(first),isToday:first.end.isToday})}`;
-    /* what will CLOSE the window is the useful thing to name; that it is open
-       is already said by the headline */
+    const dur=durationFor(W.best.peak.score);
+    /* A window that runs to the edge of the forecast has not been observed to
+       end — it is just where our data stops. Saying "until 1 AM" there invents
+       a deadline out of the horizon. */
     const after=hours.find(hr=>hr.i>first.end.i);
-    why=after
-      ? `Good for about <b>${durationFor(W.best.peak.score)}</b>. From <b>${hourLabel(after)}</b> ${FACTOR_NAME[after.core.lead.k]||"conditions"} turns it back to ${after.lvl.title.toLowerCase()}.`
-      : `Good for about <b>${durationFor(W.best.peak.score)}</b> — the air feels around ${W.best.peak.feelsDisp}°.`;
+    if(!after){
+      delta=`next ${hours.length} h`;
+      why=`Good for about <b>${dur}</b>, and it stays that way as far ahead as the forecast goes.`;
+    } else {
+      delta=`until ${hourLabel({dt:endPlus(first),isToday:first.end.isToday})}`;
+      /* A window ends when the top band does, but the hour after it is often
+         still perfectly walkable. Announcing "turns it back to GOOD" as though
+         it were a cutoff reads as bad news about the second-best band, whose
+         own subtitle is "OK to walk". Only a drop below GOOD is a real stop. */
+      const stillFine=after.score>=60;
+      const later=W.list[1];
+      why=`Good for about <b>${dur}</b>. `+(stillFine
+        ? `From <b>${hourLabel(after)}</b> it eases to ${after.lvl.title} — still walkable, just not as clear${later?`, and it is back to ${later.peak.lvl.title} from <b>${hourLabel(later.start)}</b>`:""}.`
+        : `From <b>${hourLabel(after)}</b> ${FACTOR_NAME[after.core.lead.k]||"conditions"} pushes it into <b>${after.lvl.title}</b>${later?`, then it clears again from <b>${hourLabel(later.start)}</b>`:""}.`);
+    }
   } else {
     lbl=first.start.isToday?"Recommendation · today":"Recommendation";
     when=`Better from ${hourLabel(first.start)}`;
@@ -1497,13 +1528,18 @@ function renderHero(hours,name,alerts){
   const wl=$("b12Win");
   wl.hidden=W.none;
   if(!W.none){
-    const f=W.list[0];
-    /* name the hour the window opens rather than saying "a window exists" —
-       that time is the thing the reader came for */
+    const f=W.list[0], last=hours[hours.length-1];
+    /* Name the hours rather than saying "a window exists" — that time is the
+       thing the reader came for. Every window the bars highlight gets named:
+       captioning only the first said "until 3 PM" while the strip underneath
+       was plainly still highlighting the evening. */
+    const span=w=>w.start.i===ni
+      ? (w.end.i===last.i ? "all 12 hours"
+        : `until ${hourLabel({dt:new Date(w.end.dt.getTime()+3600000),isToday:w.end.isToday})}`)
+      : (w.end.i===last.i ? `from ${hourLabel(w.start)}`
+        : `${hourLabel(w.start)}–${hourLabel({dt:new Date(w.end.dt.getTime()+3600000),isToday:w.end.isToday})}`);
     wl.innerHTML=`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="m12 2 2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z"/></svg>`
-      + (f.start.i===ni
-          ? `Recommended until ${hourLabel({dt:new Date(f.end.dt.getTime()+3600000),isToday:f.end.isToday})}`
-          : `Recommended from ${hourLabel(f.start)}`);
+      +`Recommended ${W.list.map(span).join(", then ")}`;
   }
   /* the band scale, printed exactly once on the whole screen. The chip carries
      the word, the icon and the band's own edge colour, so it survives both a
