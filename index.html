@@ -1252,7 +1252,15 @@ function scoreCore(x,b){
   let coldThresh=34-(b.cold-3)*6; if(b.size<=1)coldThresh+=8; if(b.coat<=1)coldThresh+=6;
   if(age==="senior")coldThresh+=4; else if(age==="puppy")coldThresh+=3;   // young/old chill sooner
   if(build==="overweight")coldThresh-=2;
-  let coldPen=0; if(feels<coldThresh)coldPen=Math.min(60,(coldThresh-feels)*2.6);
+  /* The ceiling has to sit above the DANGER line (a score under 25), or cold
+     can never say "stay indoors" however far the temperature falls. At 60 it
+     could not: the score pinned at 40 from +20F down to -40F, a 60-degree
+     range in which nothing on the screen changed, and a thin-coated dog in a
+     35mph wind at -40F still read RISKY. 78 lets deep cold bottom the score
+     out on its own, and matches how heat already behaves (65, or 72 once
+     humidity is defeating panting). The slope is unchanged, so mild and
+     moderate cold score exactly as before -- this only raises the ceiling. */
+  let coldPen=0; if(feels<coldThresh)coldPen=Math.min(78,(coldThresh-feels)*2.6);
   /* WIND */
   let windPen=0; if(gust>25)windPen=Math.min(35,(gust-25)*1.4); else if(wind>18)windPen=(wind-18)*1.2;
   if(feels<coldThresh+10)windPen*=1.3;
@@ -1549,8 +1557,14 @@ function computeDogIndex(){
   const kick=$("nowKicker"); kick.textContent=`Now · ${L.title}`; kick.style.color=L.rim;
   const pc=$("paveChip");
   pc.style.borderColor=pb.rim; pc.style.color=pb.rim;
-  pc.innerHTML=`<span class="pc-lbl">Pavement heat</span><b>${dispPave}°</b><span class="pc-band">${pb.label}</span>`;
-  $("nowFeels").innerHTML=`Asphalt in direct sun · air feels like <b>${dispFeels}°</b>`;
+  /* "Pavement heat 8°" reads as a contradiction on a freezing morning, and the
+     surface still matters then (ice, grit, salt) — so the metric keeps its name
+     only while there is heat in it to talk about. */
+  pc.innerHTML=`<span class="pc-lbl">${core.pavement>=70?"Pavement heat":"Pavement"}</span>`
+    +`<b>${dispPave}°</b><span class="pc-band">${pb.label}</span>`;
+  $("nowFeels").innerHTML=core.pavement>=70
+    ? `Asphalt in direct sun · air feels like <b>${dispFeels}°</b>`
+    : `Asphalt surface · air feels like <b>${dispFeels}°</b>`;
 
   // the day ahead: when to go, and the 12-hour shape of it
   const hours=buildOutlook(b), W=pickWindows(hours);
